@@ -1,0 +1,37 @@
+# playbooks/maintenance-security.yml
+- name: Configure automatic maintenance and security updates
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Install unattended-upgrades
+      apt:
+        name: unattended-upgrades
+        state: present
+
+    - name: Enable unattended-upgrades
+      copy:
+        dest: /etc/apt/apt.conf.d/20auto-upgrades
+        content: |
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Unattended-Upgrade "1";
+
+    - name: Autoremove unnecessary packages
+      apt:
+        autoremove: yes
+
+    - name: Autoclean cached packages
+      apt:
+        autoclean: yes
+
+    - name: Reboot system if needed (using needrestart)
+      apt:
+        name: needrestart
+        state: present
+
+    - name: Configure cron job for apt cleanups
+      cron:
+        name: "weekly apt cleanup"
+        weekday: "0"
+        hour: "3"
+        job: "apt autoremove -y && apt autoclean -y"

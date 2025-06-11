@@ -1,0 +1,55 @@
+# playbooks/install-packages.yml
+- name: Install essential packages and tools
+  hosts: all
+  become: true
+
+  tasks:
+    - name: apt update を実行
+      apt:
+        update_cache: yes
+
+    - name: 便利ツール追加
+      apt:
+        name:
+          - git
+          - curl
+          - htop
+          - unzip
+        state: present
+
+    - name: Docker
+      shell: curl -fsSL https://get.docker.com | sh
+      args:
+        creates: /usr/bin/docker
+
+    - name: Docker Compose (v2 as plugin)
+      apt:
+        name: docker-compose-plugin
+        state: present
+
+    - name: ansible ユーザを docker グループに追加
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: docker の自動起動を設定して起動
+      systemd:
+        name: docker
+        enabled: true
+        state: started
+
+    - name: Caddy を追加
+      shell: |
+        apt install -y debian-keyring debian-archive-keyring apt-transport-https
+        curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+        curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list
+        apt update && apt install -y caddy
+      args:
+        creates: /usr/bin/caddy
+
+    - name: Caddy の自動起動を設定して起動
+      systemd:
+        name: caddy
+        enabled: true
+        state: started
