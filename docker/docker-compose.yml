@@ -1,0 +1,68 @@
+version: "3.8"
+services:
+  frontend:
+    build: ../frontend
+    container_name: frontend-prod
+    ports:
+      - "4173:4173"
+
+  backend:
+    build: ../backend
+    container_name: backend-prod
+    ports:
+      - "8080:8080"
+
+  frontend-dev:
+    build: ../frontend
+    container_name: frontend-dev
+    ports:
+      - "5173:5173"
+    # command: ["npm", "run", "dev"]
+
+  backend-dev:
+    build: ../backend
+    container_name: backend-dev
+    ports:
+      - "8081:8081"
+    # environment:
+    #   - ENV=development
+
+  db:
+    image: postgres:15
+    container_name: mental-db
+    env_file:
+      - ../env.common
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+
+  kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    ports:
+      - "3001:3001"
+    volumes:
+      - kuma-data:/app/data
+    restart: always
+
+  caddy:
+    image: caddy:2
+    container_name: mental-caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../docker/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  pgdata:
+  kuma-data:
+  caddy_data:
+  caddy_config:

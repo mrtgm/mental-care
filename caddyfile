@@ -1,0 +1,9 @@
+log.morio.space {
+  reverse_proxy /api/* backend-prod:8080
+  reverse_proxy frontend-prod:4173
+}
+
+dev.log.morio.space {
+  reverse_proxy /api/* backend-dev:8081
+  reverse_proxy frontend-dev:5173
+}

@@ -4,38 +4,38 @@
   become: true
 
   tasks:
-    - name: Install Fail2Ban
+    - name: Fail2Ban 追加
       apt:
         name: fail2ban
         state: present
 
-    - name: Enable and start Fail2Ban
+    - name: Fail2Ban の自動起動を設定して起動
       systemd:
         name: fail2ban
         enabled: true
         state: started
 
-    - name: Install unattended-upgrades
+    - name: unattended-upgrades 追加
       apt:
         name: unattended-upgrades
         state: present
 
-    - name: Enable unattended-upgrades
+    - name: 自動適用の間隔設定
       copy:
         dest: /etc/apt/apt.conf.d/20auto-upgrades
         content: |
           APT::Periodic::Update-Package-Lists "1";
           APT::Periodic::Unattended-Upgrade "1";
 
-    - name: Autoremove unnecessary packages
+    - name: 不要なパッケージの自動削除
       apt:
         autoremove: yes
 
-    - name: Autoclean cached packages
+    - name: 自動クリーンアップの設定
       apt:
         autoclean: yes
 
-    - name: Reboot system if needed (using needrestart)
+    - name: Install needrestart for service restarts
       apt:
         name: needrestart
         state: present
