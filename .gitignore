@@ -2,4 +2,3 @@
 .DS_Store
 
 vps.yml
-group_vars/vps.yml

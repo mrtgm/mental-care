@@ -1,0 +1,55 @@
+
+# デフォルトのインベントリとプレイブックの設定
+inventory := "./inventory/hosts.ini"
+playbook_dir := "./playbooks"
+
+# デフォルトレシピ（just コマンドで表示される）
+default:
+    @just --list
+
+# インベントリの内容を表示
+inventory:
+    ansible-inventory -i {{inventory}} --list
+
+# 接続テスト (ping)
+ping:
+    ansible -i {{inventory}} all -m ping
+
+# プレイブック実行
+play PLAYBOOK:
+    ansible-playbook -i {{inventory}} {{playbook_dir}}/{{PLAYBOOK}}
+
+# プレイブック実行（詳細ログ）
+play-verbose PLAYBOOK:
+    ansible-playbook -i {{inventory}} {{playbook_dir}}/{{PLAYBOOK}} -vvv
+
+# プレイブック実行（チェックモード）
+play-check PLAYBOOK:
+    ansible-playbook -i {{inventory}} {{playbook_dir}}/{{PLAYBOOK}} --check
+
+# よく使うプレイブック用のショートカット
+install:
+    ansible-playbook -i {{inventory}} {{playbook_dir}}/install-packages.yml
+
+maintenance:
+    ansible-playbook -i {{inventory}} {{playbook_dir}}/maintenance-security.yml
+
+# インベントリ構文チェック
+check-inventory:
+    ansible-inventory -i {{inventory}} --list > /dev/null && echo "✅ Inventory syntax is valid"
+
+# プレイブック構文チェック
+check-playbook PLAYBOOK:
+    ansible-playbook -i {{inventory}} {{playbook_dir}}/{{PLAYBOOK}} --syntax-check
+
+# 全プレイブックの構文チェック
+check-all:
+    #!/usr/bin/env bash
+    echo "🔍 Checking all playbooks..."
+    for playbook in {{playbook_dir}}/*.yml; do
+        if [ -f "$playbook" ]; then
+            echo "Checking $(basename $playbook)..."
+            ansible-playbook -i {{inventory}} "$playbook" --syntax-check
+        fi
+    done
+    echo "✅ All playbooks checked"

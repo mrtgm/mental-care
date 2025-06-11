@@ -4,6 +4,17 @@
   become: true
 
   tasks:
+    - name: Install Fail2Ban
+      apt:
+        name: fail2ban
+        state: present
+
+    - name: Enable and start Fail2Ban
+      systemd:
+        name: fail2ban
+        enabled: true
+        state: started
+
     - name: Install unattended-upgrades
       apt:
         name: unattended-upgrades
