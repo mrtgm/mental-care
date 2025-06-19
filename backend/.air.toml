@@ -1,0 +1,13 @@
+[build]
+cmd = "go build -gcflags=\"all=-N -l\" -o ./tmp/main ."
+full_bin = "dlv --headless=true --listen=:40000 --api-version=2 --accept-multiclient exec --continue ./tmp/main"
+bin = "./tmp/app"
+delay = 1000
+exclude_dir = ["tmp", "frontend", "node_modules"]
+include_ext = ["go", "tpl", "tmpl", "html"]
+exclude_ext = ["swp"]
+log = "stdout"
+send_interrupt = true
+
+[log]
+time = true

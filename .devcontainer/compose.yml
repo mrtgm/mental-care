@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  devcontainer:
+    build:
+      context: .
+    container_name: devcontainer-app
+    volumes:
+      - ..:/workspace:cached
+      - gohome:/home/dev/go:cached
+    command: sleep infinity
+    ports:
+      - "5173:5173" # frontend dev server
+      - "8080:8080" # backend
+    depends_on:
+      - db
+  db:
+    image: postgres:15
+    container_name: db-local
+    env_file: [../.env.local]
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata-dev:/var/lib/postgresql/data
+
+volumes:
+  pgdata-dev:
+  gohome:

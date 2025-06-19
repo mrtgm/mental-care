@@ -1,8 +1,11 @@
 .git
 .DS_Store
 
-vps.yml
 
 .env.dev
 .env.prod
 .env.common
+
+
+/secrets
+ghcr

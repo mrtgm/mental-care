@@ -1,9 +1,7 @@
 
-# デフォルトのインベントリとプレイブックの設定
 inventory := "./inventory/hosts.ini"
 playbook_dir := "./playbooks"
 
-# デフォルトレシピ（just コマンドで表示される）
 default:
     @just --list
 
@@ -27,12 +25,14 @@ play-verbose PLAYBOOK:
 play-check PLAYBOOK:
     ansible-playbook -i {{inventory}} {{playbook_dir}}/{{PLAYBOOK}} --check
 
-# よく使うプレイブック用のショートカット
 install:
     ansible-playbook -i {{inventory}} {{playbook_dir}}/install-packages.yml
 
 maintenance:
     ansible-playbook -i {{inventory}} {{playbook_dir}}/maintenance-security.yml
+
+deploy:
+    ansible-playbook -i {{inventory}} {{playbook_dir}}/deploy-stack.yml
 
 # インベントリ構文チェック
 check-inventory:

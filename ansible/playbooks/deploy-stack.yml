@@ -1,0 +1,46 @@
+# playbooks/deploy-stack.yml
+- name: Deploy Docker stack for mental project
+  hosts: all
+  become: true
+
+  tasks:
+    - name: ディレクトリ {{ app_dir }} の存在確認
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: docker
+        mode: "0755"
+
+    - name: compose.yml を同期
+      vars:
+        project_root: "{{ playbook_dir }}/../.."
+      copy:
+        src: "{{ project_root }}/{{ item }}"
+        dest: "{{ app_dir }}/{{ item | basename }}"
+        owner: "{{ ansible_user }}"
+        group: docker
+        mode: "0644"
+      loop:
+        - compose.yml
+        - .env
+
+    - name: Docker 関連の設定ファイルを同期
+      vars:
+        project_root: "{{ playbook_dir }}/../.."
+      copy:
+        src: "{{ project_root }}/docker/"
+        dest: "{{ app_dir }}/docker/"
+        owner: "{{ ansible_user }}"
+        group: docker
+        mode: "0644"
+
+    - name: secrets ディレクトリを同期
+      vars:
+        project_root: "{{ playbook_dir }}/../.."
+      copy:
+        src: "{{ project_root }}/secrets/"
+        dest: "{{ app_dir }}/secrets/"
+        owner: "{{ ansible_user }}"
+        group: docker
+        mode: "0644"
