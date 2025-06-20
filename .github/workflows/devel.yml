@@ -41,7 +41,6 @@ jobs:
           ${{ env.IMAGE_PREFIX }}backend:staging
           ${{ env.IMAGE_PREFIX }}backend:staging-${{ github.sha }}
 
-
     - name: Setup unified SSH configuration
       run: |
         # SSH秘密鍵を標準的な場所に配置
