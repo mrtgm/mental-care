@@ -94,7 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [detect-changes, build-frontend, build-backend]
     if: |
-      !cancelled() && !failure()
+      always()
     steps:
     - uses: actions/checkout@v4
 
