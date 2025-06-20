@@ -45,7 +45,6 @@ jobs:
       uses: dawidd6/action-ansible-playbook@v2
       with:
         playbook: ansible/playbooks/deploy-stack.yml
-        inventory: ansible/inventory/hosts.ini
         key: ${{ secrets.VPS_SSH_KEY }}
         vault_password: ${{ secrets.VAULT_PASSWORD }}
 
