@@ -41,6 +41,14 @@ jobs:
           ${{ env.IMAGE_PREFIX }}backend:staging
           ${{ env.IMAGE_PREFIX }}backend:staging-${{ github.sha }}
 
+
+    - name: Setup unified SSH configuration
+      run: |
+        # SSH秘密鍵を標準的な場所に配置
+        mkdir -p ~/.ssh
+        echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+
     - name: Apply Ansible Playbook
       uses: dawidd6/action-ansible-playbook@v2
       with:
@@ -52,8 +60,6 @@ jobs:
           ${{ secrets.VPS_HOST }} ansible_user=${{ secrets.VPS_USER }} ansible_port=${{ secrets.VPS_PORT }} ansible_become=true
         options: |
           --extra-vars "@ansible/inventory/group_vars/vps.yml"
-          --extra-vars "ansible_ssh_private_key_file=.ansible_key"
-          --ssh-extra-args "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
     - name: Deploy to VPS
       uses: appleboy/ssh-action@v1
