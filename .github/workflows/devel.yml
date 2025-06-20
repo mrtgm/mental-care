@@ -43,7 +43,6 @@ jobs:
 
     - name: Setup unified SSH configuration
       run: |
-        # SSH秘密鍵を標準的な場所に配置
         mkdir -p ~/.ssh
         echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
         chmod 600 ~/.ssh/id_ed25519
@@ -64,7 +63,7 @@ jobs:
       uses: appleboy/ssh-action@v1
       with:
         host:   ${{ secrets.VPS_HOST }}
-        user:   ${{ secrets.VPS_USER }}
+        username:   ${{ secrets.VPS_USER }}
         key:    ${{ secrets.VPS_SSH_KEY }}
         port:   ${{ secrets.VPS_PORT }}
         script: |
