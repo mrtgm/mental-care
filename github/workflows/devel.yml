@@ -47,6 +47,7 @@ jobs:
         host:   ${{ secrets.VPS_HOST }}
         user:   ${{ secrets.VPS_USER }}
         key:    ${{ secrets.VPS_SSH_KEY }}
+        port:   ${{ secrets.VPS_PORT }}
         script: |
           cd /opt/mental
           docker compose pull backend-staging frontend-staging
