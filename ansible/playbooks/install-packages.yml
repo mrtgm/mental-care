@@ -1,4 +1,3 @@
-# playbooks/install-packages.yml
 - name: Install essential packages and tools
   hosts: all
   become: true

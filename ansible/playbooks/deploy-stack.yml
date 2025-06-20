@@ -1,4 +1,3 @@
-# playbooks/deploy-stack.yml
 - name: Deploy Docker stack for mental project
   hosts: all
   become: true
@@ -12,35 +11,104 @@
         group: docker
         mode: "0755"
 
-    - name: compose.yml を同期
+    - name: compose関連ファイルを同期
       vars:
         project_root: "{{ playbook_dir }}/../.."
-      copy:
+      synchronize: # copy の代わりに synchronize で高速化
         src: "{{ project_root }}/{{ item }}"
         dest: "{{ app_dir }}/{{ item | basename }}"
+        checksum: yes
+        owner: no
+        group: no
+        perms: no
+      loop:
+        - compose.yml
+        - .env
+      register: compose_sync_result
+
+    - name: compose関連ファイルの権限設定
+      file:
+        path: "{{ app_dir }}/{{ item | basename }}"
         owner: "{{ ansible_user }}"
         group: docker
         mode: "0644"
       loop:
         - compose.yml
         - .env
+      when: compose_sync_result.changed
+
+    - name: ディレクトリ {{ app_dir }}/docker の存在確認
+      file:
+        path: "{{ app_dir }}/docker"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: docker
+        mode: "0755"
 
     - name: Docker 関連の設定ファイルを同期
       vars:
         project_root: "{{ playbook_dir }}/../.."
-      copy:
+      synchronize:
         src: "{{ project_root }}/docker/"
         dest: "{{ app_dir }}/docker/"
+        delete: yes
+        recursive: yes
+        checksum: yes
+        owner: no
+        group: no
+        perms: no
+      notify:
+        - reload stack
+      register: docker_sync_result
+
+    - name: Docker設定ファイルの権限設定
+      shell: |
+        chown -R {{ ansible_user }}:docker {{ app_dir }}/docker
+        find {{ app_dir }}/docker -type d -exec chmod 0755 {} \;
+        find {{ app_dir }}/docker -type f -exec chmod 0644 {} \;
+      when: docker_sync_result.changed
+
+    - name: ディレクトリ {{ app_dir }}/secrets の存在確認
+      file:
+        path: "{{ app_dir }}/secrets"
+        state: directory
         owner: "{{ ansible_user }}"
         group: docker
-        mode: "0644"
+        mode: "0755"
 
     - name: secrets ディレクトリを同期
       vars:
         project_root: "{{ playbook_dir }}/../.."
-      copy:
+      synchronize:
         src: "{{ project_root }}/secrets/"
         dest: "{{ app_dir }}/secrets/"
-        owner: "{{ ansible_user }}"
-        group: docker
-        mode: "0644"
+        delete: yes
+        recursive: yes
+        checksum: yes
+        owner: no
+        group: no
+        perms: no
+      register: secrets_result
+
+    - name: secrets ファイルの権限設定
+      shell: |
+        chown -R {{ ansible_user }}:docker {{ app_dir }}/secrets
+        find {{ app_dir }}/secrets -type d -exec chmod 0755 {} \;
+        find {{ app_dir }}/secrets -type f -exec chmod 0644 {} \;
+      when: secrets_result.changed
+
+  handlers:
+    - name: reload stack
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_dir }}"
+        project_name: "mental"
+        state: present           # pull + up -d
+        pull: missing
+        recreate: smart
+        remove_orphans: false
+        services:
+          - backend
+          - frontend
+          - backend-staging
+          - frontend-staging
+          - caddy

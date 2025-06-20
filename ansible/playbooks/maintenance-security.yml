@@ -1,4 +1,3 @@
-# playbooks/maintenance-security.yml
 - name: Configure automatic maintenance and security updates
   hosts: all
   become: true
