@@ -53,6 +53,7 @@ jobs:
         options: |
           --extra-vars "@ansible/inventory/group_vars/vps.yml"
           --extra-vars "ansible_ssh_private_key_file=.ansible_key"
+          --ssh-extra-args "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
     - name: Deploy to VPS
       uses: appleboy/ssh-action@v1
