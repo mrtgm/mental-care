@@ -47,6 +47,9 @@ jobs:
         playbook: ansible/playbooks/deploy-stack.yml
         key: ${{ secrets.VPS_SSH_KEY }}
         vault_password: ${{ secrets.VAULT_PASSWORD }}
+        inventory: |
+          [vps]
+          ${{ secrets.VPS_HOST }} ansible_user=${{ secrets.VPS_USER }} ansible_port=${{ secrets.VPS_PORT }} ansible_become=true
 
     - name: Deploy to VPS
       uses: appleboy/ssh-action@v1
