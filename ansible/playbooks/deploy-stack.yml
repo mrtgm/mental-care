@@ -112,7 +112,7 @@
         project_name: "mental"
         state: present           # pull + up -d
         pull: missing
-        recreate: smart
+        recreate: auto
         remove_orphans: false
         services:
           - backend
