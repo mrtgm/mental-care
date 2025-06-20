@@ -51,7 +51,7 @@ jobs:
           [vps]
           ${{ secrets.VPS_HOST }} ansible_user=${{ secrets.VPS_USER }} ansible_port=${{ secrets.VPS_PORT }} ansible_become=true
         options: |
-          --extra-vars "@ansible/group_vars/vps.yml"
+          --extra-vars "@ansible/inventory/group_vars/vps.yml"
 
     - name: Deploy to VPS
       uses: appleboy/ssh-action@v1
