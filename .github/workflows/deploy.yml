@@ -44,8 +44,8 @@ jobs:
     - uses: actions/checkout@v4
     - uses: dorny/paths-filter@v2
       id: changes
-      base: HEAD~1 # Compare with the previous commit
       with:
+        base: HEAD~1 # Compare with the previous commit
         filters: |
           frontend:
             - 'frontend/**'
