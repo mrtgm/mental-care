@@ -1,3 +1,4 @@
+FROM mcr.microsoft.com/vscode/devcontainers/javascript-node:1-20 AS node-source
 FROM mcr.microsoft.com/devcontainers/go:latest
 
 ARG username=dev
@@ -14,6 +15,12 @@ ENV PATH=${PATH}:${GOPATH}/bin
 ENV PATH=${PATH}:/usr/local/go/bin
 ENV PATH=${PATH}:/go/bin
 RUN mkdir -p ${GOPATH} && chown -R ${username}:${username} ${GOPATH}
+
+# copy node binaries from node-source (for Biome)
+COPY --from=node-source /usr/local/bin/node /usr/local/bin/
+COPY --from=node-source /usr/local/bin/npm /usr/local/bin/
+COPY --from=node-source /usr/local/bin/npx /usr/local/bin/
+COPY --from=node-source /usr/local/lib/node_modules /usr/local/lib/node_modules
 
 # install bun
 ENV BUN_INSTALL=/bun

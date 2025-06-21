@@ -31,19 +31,23 @@ dev:
 
     # 既存セッションがあれば削除
     tmux has-session -t $SESSION_NAME 2>/dev/null && tmux kill-session -t $SESSION_NAME
+    echo "🚀 Starting development environment with split panes..."
 
-    echo "🚀 Starting development environment..."
     tmux new-session -d -s $SESSION_NAME
 
-    # Frontend (TypeScript)
-    tmux rename-window -t $SESSION_NAME:0 'frontend'
-    tmux send-keys -t $SESSION_NAME:frontend 'cd frontend && echo "🎨 Starting Frontend..." && bun run dev' C-m
+    # メインウィンドウ: Frontend | Backend
+    tmux rename-window -t $SESSION_NAME:0 'dev'
 
-    # Backend (Golang)
-    tmux new-window -t $SESSION_NAME -n 'backend'
-    tmux send-keys -t $SESSION_NAME:backend 'cd backend && echo "⚡ Starting Backend..." && air' C-m
+    # 右側にペイン作成
+    tmux split-window -t $SESSION_NAME:dev -h
 
-    # Services (Database, Caddy)
+    # 左ペインにコマンド送信
+    tmux send-keys -t $SESSION_NAME:dev.0 'cd frontend && echo "🎨 Starting Frontend..." && bun run dev' C-m
+
+    # 右ペインにコマンド送信
+    tmux send-keys -t $SESSION_NAME:dev.1 'cd backend && echo "⚡ Starting Backend..." && air' C-m
+
+    # Services & Logs
     tmux new-window -t $SESSION_NAME -n 'services'
     tmux send-keys -t $SESSION_NAME:services 'echo "🐳 Monitoring Services..." && docker logs -f caddy-local' C-m
 
@@ -51,12 +55,8 @@ dev:
     tmux new-window -t $SESSION_NAME -n 'terminal'
     tmux send-keys -t $SESSION_NAME:terminal 'clear && echo "🔧 Development Terminal Ready"' C-m
 
-    echo "✅ Development environment started!"
-    echo "📍 Frontend: http://localhost:3000"
-    echo "📍 Backend API: http://localhost/api/"
-    echo "📍 Direct Backend: http://localhost:8080"
-    echo "💡 Use 'just attach' to reattach to session"
-    echo "💡 Use 'just stop' to stop everything"
+    # 最初のウィンドウに戻る
+    tmux select-window -t $SESSION_NAME:dev
 
     # セッションにアタッチ
     tmux attach-session -t $SESSION_NAME
