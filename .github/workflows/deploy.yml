@@ -169,6 +169,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy
     if: always()
+    permissions: { contents: read, actions: read }
     steps:
     - name: Notify deployment status
       uses: 8398a7/action-slack@v3
@@ -176,12 +177,4 @@ jobs:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
       with:
         status: ${{ job.status }}
-        custom_payload: |
-          {
-            "attachments": [
-              {
-                color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-                text: "${{ inputs.environment }} deployment ${{ job.status }}\nFrontend: ${{ needs.detect-changes.outputs.frontend-changed == 'true' && '✅ Updated' || '⏭️ Skipped' }}\nBackend: ${{ needs.detect-changes.outputs.backend-changed == 'true' && '✅ Updated' || '⏭️ Skipped' }}\nCommit: ${{ github.sha }}"
-              }
-            ]
-          }
+        fields: repo,message,commit,author

@@ -11,7 +11,7 @@ jobs:
       environment: staging
       image_tag: staging
       compose_services: backend-staging frontend-staging
-    permissions: { contents: read, packages: write }
+    permissions: { contents: read, packages: write, actions: read }
     secrets:
       CR_PAT: ${{ secrets.CR_PAT }}
       VPS_HOST: ${{ secrets.VPS_HOST }}

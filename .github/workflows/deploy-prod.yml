@@ -11,7 +11,7 @@ jobs:
       environment: prod
       image_tag: prod
       compose_services: backend frontend
-    permissions: { contents: read, packages: write }
+    permissions: { contents: read, packages: write, actions: read }
     secrets:
       CR_PAT: ${{ secrets.CR_PAT }}
       VPS_HOST: ${{ secrets.VPS_HOST }}
