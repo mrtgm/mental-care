@@ -45,6 +45,7 @@ export default function Home() {
 				className="w-full aspect-[10/3] bg-gray-300 overflow-x-scroll flex flex-col relative text-indigo-950"
 				ref={ref}
 			>
+				?
 				<div className="flex flex-nowrap flex-row-reverse w-full h-full overflow-x-scroll gap-x-[0.5%] relative pt-[2%]">
 					<div className="flex flex-nowrap flex-row-reverse w-full gap-x-[0.5%] h-[5%] absolute top-0 right-0">
 						<div
