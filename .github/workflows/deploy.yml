@@ -162,3 +162,20 @@ jobs:
           docker compose pull ${{ inputs.compose_services }}
           docker compose up -d --wait --no-deps ${{ inputs.compose_services }}
           docker image prune -af --filter "until=240h"
+
+    - name: Notify deployment status
+      if: always()
+      uses: 8398a7/action-slack@v3
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      with:
+        status: ${{ job.status }}
+        custom_payload: |
+          {
+            "attachments": [
+              {
+                color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
+                text: "${{ inputs.environment }} deployment ${{ job.status }}\nFrontend: ${{ needs.detect-changes.outputs.frontend-changed == 'true' && '✅ Updated' || '⏭️ Skipped' }}\nBackend: ${{ needs.detect-changes.outputs.backend-changed == 'true' && '✅ Updated' || '⏭️ Skipped' }}\nCommit: ${{ github.sha }}"
+              }
+            ]
+          }
