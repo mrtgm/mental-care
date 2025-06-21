@@ -3,9 +3,9 @@
   become: true
 
   tasks:
-    - name: ディレクトリ {{ app_dir }} の存在確認
+    - name: ディレクトリ {{ app_dir }}/files の存在確認
       file:
-        path: "{{ app_dir }}"
+        path: "{{ app_dir }}/files"
         state: directory
         owner: "{{ ansible_user }}"
         group: docker
@@ -13,28 +13,23 @@
 
     - name: compose関連ファイルを同期
       vars:
-        project_root: "{{ playbook_dir }}/../.."
-      synchronize: # copy の代わりに synchronize で高速化
-        src: "{{ project_root }}/{{ item }}"
-        dest: "{{ app_dir }}/{{ item | basename }}"
+        ansible_root: "{{ playbook_dir }}/.."
+      synchronize:
+        src: "{{ ansible_root }}/files/"
+        dest: "{{ app_dir }}/files/"
+        recursive: yes
         checksum: yes
+        delete: yes
         owner: no
         group: no
         perms: no
-      loop:
-        - compose.yml
-        - .env
       register: compose_sync_result
 
     - name: compose関連ファイルの権限設定
-      file:
-        path: "{{ app_dir }}/{{ item | basename }}"
-        owner: "{{ ansible_user }}"
-        group: docker
-        mode: "0644"
-      loop:
-        - compose.yml
-        - .env
+      shell: |
+        chown -R {{ ansible_user }}:docker {{ app_dir }}/files
+        find {{ app_dir }}/files -type d -exec chmod 0755 {} \;
+        find {{ app_dir }}/files -type f -exec chmod 0644 {} \;
       when: compose_sync_result.changed
 
     - name: ディレクトリ {{ app_dir }}/docker の存在確認
@@ -73,6 +68,7 @@
         path: "{{ playbook_dir }}/../../secrets"
       register: secrets_dir
       delegate_to: localhost
+      become: false
 
     - name: ディレクトリ {{ app_dir }}/secrets の存在確認
       file:
@@ -108,7 +104,7 @@
   handlers:
     - name: reload stack
       community.docker.docker_compose_v2:
-        project_src: "{{ app_dir }}"
+        project_src: "{{ app_dir }}/files"
         project_name: "mental"
         state: present           # pull + up -d
         pull: missing

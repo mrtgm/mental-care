@@ -64,6 +64,9 @@ RUN echo 'eval "$(starship init zsh)"' >> /home/${username}/.zshrc
 # install just
 RUN curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
 
+# tmux
+COPY --chown=${username}:${username} ./.tmux.conf /home/${username}/.tmux.conf
+
 USER ${username}
 
 # install air

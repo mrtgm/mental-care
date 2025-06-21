@@ -1,3 +1,6 @@
+
+open devcontainer and `just dev`
+
 残務：
 
 - Secrets の扱いをどうするか
