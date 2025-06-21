@@ -4,10 +4,10 @@ just maintenance  # Run maintenance tasks
 just deploy  # Copy files to the server
 ```
 
-/opt/mental 以下に下記を配置：
+VPS の /opt/mental 以下に /vps 以下をコピー：
 - compose/
   - compose.yml
-  - .env
+  - .env # 本番用環境変数ファイル
 - secrets/
   - ansible_vault_pass
   - postgres_password ...
