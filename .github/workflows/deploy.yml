@@ -163,8 +163,12 @@ jobs:
           docker compose up -d --wait --no-deps ${{ inputs.compose_services }}
           docker image prune -af --filter "until=240h"
 
+  notify-deployment:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+    steps:
     - name: Notify deployment status
-      if: always()
       uses: 8398a7/action-slack@v3
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
