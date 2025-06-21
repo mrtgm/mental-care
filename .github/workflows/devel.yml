@@ -94,7 +94,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: [detect-changes, build-frontend, build-backend]
     if: |
-      always()
+      always() && (
+        needs.detect-changes.outputs.ansible-changed == 'true' ||
+        (
+          !(needs.build-frontend.result == 'skipped' && needs.build-backend.result == 'skipped') &&
+          needs.build-frontend.result != 'failure' &&
+          needs.build-backend.result != 'failure'
+        )
+      )
     steps:
     - uses: actions/checkout@v4
 
