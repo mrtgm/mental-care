@@ -194,7 +194,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            cd /opt/mental/files
+            cd /opt/mental/compose
             docker compose pull ${{ inputs.compose_services }}
             docker compose up -d --wait --no-deps ${{ inputs.compose_services }}
             docker image prune -af --filter "until=240h"
