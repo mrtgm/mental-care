@@ -68,6 +68,12 @@
         find {{ app_dir }}/docker -type f -exec chmod 0644 {} \;
       when: docker_sync_result.changed
 
+    - name: secrets ディレクトリの存在確認
+      stat:
+        path: "{{ playbook_dir }}/../../secrets"
+      register: secrets_dir
+      delegate_to: localhost
+
     - name: ディレクトリ {{ app_dir }}/secrets の存在確認
       file:
         path: "{{ app_dir }}/secrets"
@@ -75,6 +81,7 @@
         owner: "{{ ansible_user }}"
         group: docker
         mode: "0755"
+      when: secrets_dir.stat.exists
 
     - name: secrets ディレクトリを同期
       vars:
@@ -89,6 +96,7 @@
         group: no
         perms: no
       register: secrets_result
+      when: secrets_dir.stat.exists
 
     - name: secrets ファイルの権限設定
       shell: |
@@ -104,7 +112,7 @@
         project_name: "mental"
         state: present           # pull + up -d
         pull: missing
-        recreate: smart
+        recreate: auto
         remove_orphans: false
         services:
           - backend
