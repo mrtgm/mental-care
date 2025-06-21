@@ -46,7 +46,6 @@ jobs:
       id: changes
       with:
         base: ${{ github.event.before }}
-        head: ${{ github.event.head }}
         filters: |
           frontend:
             - 'frontend/**'
