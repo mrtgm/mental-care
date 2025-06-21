@@ -28,6 +28,8 @@ on:
                 required: true
             VAULT_PASSWORD:
                 required: true
+            SLACK_WEBHOOK_URL:
+                required: true
 
 env:
   REGISTRY: ghcr.io

@@ -19,3 +19,4 @@ jobs:
       VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
       VPS_PORT: ${{ secrets.VPS_PORT }}
       VAULT_PASSWORD: ${{ secrets.VAULT_PASSWORD }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
