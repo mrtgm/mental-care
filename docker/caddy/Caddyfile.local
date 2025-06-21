@@ -1,0 +1,4 @@
+localhost:80 {
+    reverse_proxy /api/* devcontainer:{$BACKEND_PORT}
+    reverse_proxy devcontainer:{$FRONTEND_PORT}
+}

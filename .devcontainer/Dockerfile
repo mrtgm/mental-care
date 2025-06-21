@@ -3,13 +3,14 @@ FROM mcr.microsoft.com/devcontainers/go:latest
 ARG username=dev
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends postgresql-client git curl unzip redis-tools zsh
+    && apt-get -y install --no-install-recommends postgresql-client git curl unzip redis-tools zsh tmux
 RUN sudo useradd --create-home --shell /bin/bash ${username}
 RUN sudo usermod -aG sudo ${username}
 RUN echo "${username} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/${username}
 
 # Go Environment
 ENV GOPATH=/home/${username}/go
+ENV PATH=${PATH}:${GOPATH}/bin
 ENV PATH=${PATH}:/usr/local/go/bin
 ENV PATH=${PATH}:/go/bin
 RUN mkdir -p ${GOPATH} && chown -R ${username}:${username} ${GOPATH}
