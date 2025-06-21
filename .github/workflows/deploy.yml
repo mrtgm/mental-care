@@ -1,8 +1,33 @@
-name: build-and-deploy-staging
+name: Build and Deploy
 
 on:
-  push:
-    branches: [devel]
+    workflow_call:
+        inputs:
+            environment:
+                description: 'Deployment environment (staging/prod)'
+                required: true
+                type: string
+            image_tag:
+                description: 'Docker image tag'
+                required: true
+                type: string
+            compose_services:
+                description: 'Docker Compose services to deploy'
+                required: true
+                type: string
+        secrets:
+            CR_PAT:
+                required: true
+            VPS_HOST:
+                required: true
+            VPS_USER:
+                required: true
+            VPS_SSH_KEY:
+                required: true
+            VPS_PORT:
+                required: true
+            VAULT_PASSWORD:
+                required: true
 
 env:
   REGISTRY: ghcr.io
@@ -54,10 +79,10 @@ jobs:
         context: ./frontend
         push: true
         tags: |
-          ${{ env.IMAGE_PREFIX }}frontend:staging
-          ${{ env.IMAGE_PREFIX }}frontend:staging-${{ github.sha }}
-        cache-from: type=gha,scope=frontend-staging
-        cache-to: type=gha,mode=max,scope=frontend-staging
+          ${{ env.IMAGE_PREFIX }}frontend:${{ inputs.image_tag }}
+          ${{ env.IMAGE_PREFIX }}frontend:${{ inputs.image_tag }}-${{ github.sha }}
+        cache-from: type=gha,scope=frontend-${{ inputs.image_tag }}
+        cache-to: type=gha,mode=max,scope=frontend-${{ inputs.image_tag }}
         platforms: linux/amd64
 
   build-backend:
@@ -84,10 +109,10 @@ jobs:
         context: ./backend
         push: true
         tags: |
-          ${{ env.IMAGE_PREFIX }}backend:staging
-          ${{ env.IMAGE_PREFIX }}backend:staging-${{ github.sha }}
-        cache-from: type=gha,scope=backend-staging
-        cache-to: type=gha,mode=max,scope=backend-staging
+          ${{ env.IMAGE_PREFIX }}backend:${{ inputs.image_tag }}
+          ${{ env.IMAGE_PREFIX }}backend:${{ inputs.image_tag }}-${{ github.sha }}
+        cache-from: type=gha,scope=backend-${{ inputs.image_tag }}
+        cache-to: type=gha,mode=max,scope=backend-${{ inputs.image_tag }}
         platforms: linux/amd64
 
   deploy:
@@ -133,7 +158,6 @@ jobs:
         port:   ${{ secrets.VPS_PORT }}
         script: |
           cd /opt/mental
-          docker compose pull backend-staging frontend-staging
-          docker compose up -d --wait --no-deps \
-                backend-staging frontend-staging
+          docker compose pull ${{ inputs.compose_services }}
+          docker compose up -d --wait --no-deps ${{ inputs.compose_services }}
           docker image prune -af --filter "until=240h"
