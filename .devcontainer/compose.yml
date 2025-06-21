@@ -15,8 +15,8 @@ services:
     image: caddy:2
     container_name: caddy-local
     volumes:
-      - ../docker/caddy/Caddyfile.local:/etc/caddy/Caddyfile
-    env_file: [../.env.local]
+      - ./Caddyfile.local:/etc/caddy/Caddyfile
+    env_file: [ ../.env.local ]
     ports:
       - "80:80"
     depends_on:
@@ -25,16 +25,12 @@ services:
   db:
     image: postgres:15
     container_name: db-local
-    env_file: [../.env.local]
+    env_file: [ ../.env.local ]
     ports:
       - "5432:5432"
-    environment:
-      - POSTGRES_USER=mental
-      - POSTGRES_PASSWORD=secret
-      - POSTGRES_DB=mental
     volumes:
       - pgdata-dev:/var/lib/postgresql/data
-      - ../docker/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ../ansible/vps/docker/db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
 volumes:
   app-node-modules:

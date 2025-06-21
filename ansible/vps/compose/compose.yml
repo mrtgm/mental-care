@@ -122,11 +122,11 @@ volumes:
 
 secrets:
   tunnel_token:
-    file: ./secrets/cloudflare_tunnel_token
+    file: ../secrets/cloudflare_tunnel_token
   ssh_token:
-    file: ./secrets/cloudflare_ssh_token
+    file: ../secrets/cloudflare_ssh_token
   postgres_password:
-    file: ./secrets/postgres_password
+    file: ../secrets/postgres_password
 
 networks:
   db:

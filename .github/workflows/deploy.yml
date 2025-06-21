@@ -55,8 +55,6 @@ jobs:
               - 'backend/**'
             ansible:
               - 'ansible/**'
-              - 'compose.yml'
-              - '.env'
 
   build-frontend:
     runs-on: ubuntu-latest
