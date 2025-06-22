@@ -184,7 +184,7 @@ jobs:
         run: |
           tailscale status
           tailscale netcheck
-          ping -c 3 ${{ secrets.VPS_HOST }}
+          tailscale ping -c 3 ${{ secrets.VPS_HOST }}
 
       - name: Setup unified SSH configuration
         run: |
