@@ -1,0 +1,8 @@
+---
+roles:
+  - name: artis3n.tailscale
+    version: ">=5.0.0"
+
+collections:
+  - name: community.general
+    version: ">=3.0.0"
