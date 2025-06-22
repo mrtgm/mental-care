@@ -180,12 +180,6 @@ jobs:
           tags: tag:ci
           use-cache: 'true'
 
-      - name: Test Tailscale connectivity
-        run: |
-          tailscale status
-          tailscale netcheck
-          tailscale ping -c 3 ${{ secrets.VPS_HOST }}
-
       - name: Setup unified SSH configuration
         run: |
           mkdir -p ~/.ssh
