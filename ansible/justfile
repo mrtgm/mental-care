@@ -25,7 +25,6 @@ play-verbose PLAYBOOK:
 play-check PLAYBOOK:
     ansible-playbook -i {{inventory}} {{playbook_dir}}/{{PLAYBOOK}} --check
 
-
 setup:
     ansible-galaxy install -r requirements.yml
 
