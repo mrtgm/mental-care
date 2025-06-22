@@ -41,5 +41,10 @@
   roles:
     - role: artis3n.tailscale
       vars:
-        tailscale_authkey: "{{ tailscale_key }}"
+        verbose: true
+        tailscale_authkey: "{{ taliscale_key }}"
+        tailscale_tags:
+          - server
+        tailscale_oauth_preauthorized: true
+        tailscale_oauth_ephemeral: true
         tailscale_args: "--ssh"
