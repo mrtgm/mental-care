@@ -1,7 +1,6 @@
 killport *port:
     lsof -i :{{port}} | awk 'NR!=1 {print $2}' | xargs kill
 
-
 # イメージビルド
 image-build:
     ./bin/image-build.sh

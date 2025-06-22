@@ -1,3 +1,4 @@
+name: mental
 services:
   frontend:
     image: ghcr.io/mrtgm/mental-frontend:prod
