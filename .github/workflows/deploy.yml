@@ -183,7 +183,7 @@ jobs:
       - name: Test Tailscale connectivity
         run: |
           tailscale status
-          ping -c 3 ${{ env.VPS_HOST }}
+          ping -c 3 ${{ secrets.VPS_HOST }}
 
       - name: Setup unified SSH configuration
         run: |

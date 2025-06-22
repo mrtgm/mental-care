@@ -28,6 +28,7 @@ play-check PLAYBOOK:
 setup:
     ansible-galaxy install -r requirements.yml
 
+
 install:
     ansible-playbook -i {{inventory}} {{playbook_dir}}/install-packages.yml
 
