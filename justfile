@@ -21,6 +21,7 @@ kill-all:
     docker kill $(docker ps -q)
     docker rm $(docker ps -aq)
 
+
 clean:
     docker compose -p mental-care_devcontainer down
     docker volume prune -f
