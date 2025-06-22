@@ -30,6 +30,11 @@ on:
         required: true
       SLACK_WEBHOOK_URL:
         required: true
+      TS_OAUTH_CLIENT_ID:
+        required: true
+      TS_OAUTH_SECRET:
+        required: true
+
 
 env:
   REGISTRY: ghcr.io
