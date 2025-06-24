@@ -1,4 +1,4 @@
-import { isSameDate } from "~/utils/date";
+import { isSameDate } from "@/utils/date";
 
 export type CalenderEvent = {
 	year: number;
