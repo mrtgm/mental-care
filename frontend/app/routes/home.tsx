@@ -4,8 +4,10 @@ import {
 	WEEK_OFFSET_TO_LOAD,
 } from "~/features/calender/domains/events/constants";
 import {
-	attachEventsToGrid,
+	type CalenderEvent,
+	type CalenderEventMap,
 	type CalenderGrid,
+	calcCalenderEventMap,
 	calcGrid,
 } from "~/features/calender/domains/events/domain";
 import type { Route } from "./+types/home";
@@ -17,19 +19,22 @@ export function meta({}: Route.MetaArgs) {
 	];
 }
 
-const events = [
+// type: events
+const calenderEvents = [
 	{
 		year: 2025,
 		month: 5,
-		date: 30,
+		date: 1,
+		achievements: [],
 		content: {
-			message: "yes",
+			message: "hooo",
 		},
 	},
 	{
 		year: 2025,
 		month: 3,
 		date: 23,
+		achievements: [],
 		content: {
 			message: "yes",
 		},
@@ -38,6 +43,7 @@ const events = [
 		year: 2024,
 		month: 3,
 		date: 23,
+		achievements: [],
 		content: {
 			message: "yes",
 		},
@@ -47,9 +53,17 @@ const events = [
 export default function Home() {
 	const ref = useRef<HTMLDivElement>(null);
 
-	const [consumedEventCount, setConsumedEventCount] = useState(0);
-	const [grid, setGrid] = useState<CalenderGrid>([]);
-	const [lastGridDate, setLastGridDate] = useState<Date>(new Date());
+	const [calenderState, setCalenderState] = useState<{
+		calenderEvents: CalenderEvent[];
+		calenderEventMap: CalenderEventMap;
+		calenderGrid: CalenderGrid;
+		startDate: Date;
+	}>({
+		calenderEvents: [],
+		calenderEventMap: new Map(),
+		calenderGrid: [],
+		startDate: new Date(),
+	});
 
 	const observerRef = useCallback(
 		(node: HTMLElement | null) => {
@@ -57,19 +71,26 @@ export default function Home() {
 			const intersectionObserver = new IntersectionObserver(
 				(entries) => {
 					entries.forEach((entry) => {
-						if (entry.isIntersecting && consumedEventCount < events.length) {
-							// ここでホントは 新規に読むこむべきイベントがある時、fetch
-							// loding 中なら弾く、とか
+						if (entry.isIntersecting) {
+							const {
+								calenderGrid: newCalenderGrid,
+								startDate: updatedStartDate,
+							} = calcGrid(calenderState.startDate, WEEK_COUNT_TO_LOAD);
 
-							const { grid: newGrids, lastGridDate: newLastGridDate } =
-								calcGrid(WEEK_COUNT_TO_LOAD, lastGridDate);
+							// Event の fetch (range) してステート更新が必要
+							// loding 中なら無視とか
 
-							const { gridWithEvents, updatedConsumedEventCount } =
-								attachEventsToGrid(newGrids, events, consumedEventCount);
+							const updatedCalenderEventMap = calcCalenderEventMap(
+								calenderState.calenderEventMap,
+								calenderState.calenderEvents,
+							);
 
-							setConsumedEventCount(updatedConsumedEventCount);
-							setGrid((prev) => [...prev, ...gridWithEvents]);
-							setLastGridDate(newLastGridDate);
+							setCalenderState(({ calenderGrid, calenderEvents }) => ({
+								calenderEvents,
+								calenderEventMap: updatedCalenderEventMap,
+								calenderGrid: [...calenderGrid, ...newCalenderGrid],
+								startDate: updatedStartDate,
+							}));
 						}
 					});
 				},
@@ -84,21 +105,28 @@ export default function Home() {
 				intersectionObserver.disconnect();
 			};
 		},
-		[grid, lastGridDate],
+		[calenderState],
 	);
 
 	useEffect(() => {
-		const { grid, lastGridDate } = calcGrid(WEEK_COUNT_TO_LOAD, new Date());
-
-		const { gridWithEvents, updatedConsumedEventCount } = attachEventsToGrid(
-			grid,
-			events,
-			consumedEventCount,
+		const { calenderGrid, startDate: updatedStartDate } = calcGrid(
+			calenderState.startDate,
+			WEEK_COUNT_TO_LOAD,
 		);
 
-		setConsumedEventCount(updatedConsumedEventCount);
-		setGrid(gridWithEvents);
-		setLastGridDate(lastGridDate);
+		// Event の fetch (range) してステート更新が必要
+
+		const calenderEventMap = calcCalenderEventMap(
+			calenderState.calenderEventMap,
+			calenderEvents,
+		);
+
+		setCalenderState(() => ({
+			calenderEvents,
+			calenderGrid,
+			calenderEventMap,
+			startDate: updatedStartDate,
+		}));
 
 		ref.current?.scrollTo({
 			left: ref.current.scrollWidth,
@@ -112,8 +140,14 @@ export default function Home() {
 				relative text-indigo-950 gap-[1%] p-[0.5%] flex-nowrap"
 				ref={ref}
 			>
-				{grid.map((week, rowIndex, self) => {
-					const isFirstWeek = !!week.find((v) => v?.date.getDate() === 1);
+				{calenderState.calenderGrid.map((week, rowIndex, self) => {
+					const isFirstWeekOfMonth = week.some((v) => v.date.getDate() === 1);
+
+					const isFirstWeekOfYear =
+						isFirstWeekOfMonth &&
+						week.some((v) => v.date.getMonth() === 0) &&
+						week.every((v) => v.date.getMonth() !== 1);
+
 					const isObserved = rowIndex + 1 === self.length - WEEK_OFFSET_TO_LOAD;
 
 					return (
@@ -123,19 +157,32 @@ export default function Home() {
 								className="shrink-0 w-[3%] grid-rows-8 grid"
 								{...(isObserved && { ref: observerRef })}
 							>
-								<div className="row-span-1 flex items-end justify-center">
-									{isFirstWeek ? (week.at(0)?.date.getMonth() ?? 0) + 1 : null}
+								<div className="row-span-1 flex items-end justify-center flex-col">
+									<span>
+										{isFirstWeekOfYear
+											? (week.at(0)?.date.getFullYear() ?? 0)
+											: null}
+									</span>
+									<span>
+										{isFirstWeekOfMonth
+											? (week.at(0)?.date.getMonth() ?? 0) + 1
+											: null}
+									</span>
 								</div>
 								<div className="row-span-7 grid-rows-7 h-full grid gap-[1%]">
-									{week.map((v, columnIndex) => {
+									{week.map((day, columnIndex) => {
 										return (
 											<div
-												key={v ? v.dateString : columnIndex}
+												key={day.dateString}
 												className={`bg-white flex justify-center items-center`}
 												style={{ order: 7 - columnIndex }}
 											>
-												{v ? v.event?.message : null}
-												{/* {v ? v.date.getDate() : null} */}
+												{
+													calenderState.calenderEventMap.get(
+														`${rowIndex}:${columnIndex}`,
+													)?.message
+												}
+												{day.date.getDate()}
 											</div>
 										);
 									})}

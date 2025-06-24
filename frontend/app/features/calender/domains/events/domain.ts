@@ -7,6 +7,8 @@ export type CalenderEvent = {
 	content: CalenderEventContent;
 };
 
+export type CalenderEventMap = Map<`${number}:${number}`, CalenderEventContent>;
+
 // パターンを考える
 export type CalenderEventContent = {
 	[key in string]: string;
@@ -18,37 +20,56 @@ export type GridDay = {
 	dateString: string;
 };
 
-export type CalenderGrid = (GridDay | null)[][];
+export type CalenderGrid = GridDay[][];
 
 export const createDateFromEvent = (event: CalenderEvent): Date => {
 	return new Date(event.year, event.month - 1, event.date);
 };
 
-export const calcGrid = (
-	weekCountToLoad: number,
-	startDate: Date,
-): {
-	grid: CalenderGrid;
-	lastGridDate: Date;
-} => {
-	const grid: CalenderGrid = [];
+const calcCalenderGridIndex = (event: CalenderEvent) => {
+	const now = new Date();
+	const eventDate = createDateFromEvent(event);
 
-	const now = startDate;
+	if (eventDate.getTime() > now.getTime()) throw new Error("Invalid Date");
+
+	// 土曜に
+	now.setDate(now.getDate() + (6 - now.getDay()));
+
+	return `${
+		((now.getTime() - eventDate.getTime()) / (1000 * 60 * 60 * 24 * 7)) | 0
+	}:${6 - eventDate.getDay()}` as `${number}:${number}`;
+};
+
+export const calcCalenderEventMap = (
+	calenderEventMap: CalenderEventMap,
+	events: CalenderEvent[],
+): CalenderEventMap => {
+	for (const event of events) {
+		calenderEventMap.set(calcCalenderGridIndex(event), event.content);
+	}
+
+	return calenderEventMap;
+};
+
+export const calcGrid = (
+	startDate: Date,
+	weekCountToLoad: number,
+): {
+	calenderGrid: CalenderGrid;
+	startDate: Date;
+} => {
+	const calenderGrid: CalenderGrid = [];
+
 	let remainingWeeks = weekCountToLoad;
 
+	// 土曜に
+	const now = new Date(startDate);
+	now.setDate(now.getDate() + (6 - now.getDay()));
+
 	while (remainingWeeks > 0) {
-		const week: (GridDay | null)[] = [];
+		const week: GridDay[] = [];
 
 		for (let i = 0; i < 7; i++) {
-			// 最初の週の空白セルを処理
-			const isFirstWeek = remainingWeeks === weekCountToLoad;
-			const shouldSkipDay = isFirstWeek && i < 6 - now.getDay();
-
-			if (shouldSkipDay) {
-				week.push(null);
-				continue;
-			}
-
 			week.push({
 				date: new Date(now),
 				dateString: now.toLocaleString(),
@@ -58,47 +79,9 @@ export const calcGrid = (
 			now.setDate(now.getDate() - 1);
 		}
 
-		grid.push(week);
+		calenderGrid.push(week);
 		remainingWeeks--;
 	}
 
-	return { grid, lastGridDate: new Date(now) };
-};
-
-export const attachEventsToGrid = (
-	grid: CalenderGrid,
-	events: CalenderEvent[],
-	consumedEventCount: number,
-) => {
-	const clonedGrid = [...grid];
-
-	const sortedEvents = [...events.slice(consumedEventCount)].sort(
-		(a, b) =>
-			new Date(b.year, b.month - 1, b.date).getTime() -
-			new Date(a.year, a.month - 1, a.date).getTime(),
-	);
-
-	for (const week of clonedGrid) {
-		for (const day of week) {
-			if (!day) continue;
-			let matchedEvent = null;
-
-			if (sortedEvents.length > 0) {
-				const firstEvent = sortedEvents[0];
-				const eventDate = createDateFromEvent(firstEvent);
-
-				if (isSameDate(eventDate, day.date)) {
-					matchedEvent = events[0];
-					sortedEvents.shift();
-					consumedEventCount++;
-				}
-			}
-			day.event = matchedEvent ? matchedEvent.content : null;
-		}
-	}
-
-	return {
-		gridWithEvents: clonedGrid,
-		updatedConsumedEventCount: consumedEventCount,
-	};
+	return { calenderGrid, startDate: new Date(now) };
 };
