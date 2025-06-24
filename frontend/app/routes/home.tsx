@@ -18,6 +18,7 @@ import {
 	calcGrid,
 } from "@/features/calender/domains/events/domain";
 import { getMonthName } from "@/utils/date";
+import { debounce } from "@/utils/function";
 import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
@@ -56,6 +57,15 @@ const calenderEvents = [
 			message: "yes",
 		},
 	},
+	{
+		year: 2024,
+		month: 2,
+		date: 23,
+		achievements: [],
+		content: {
+			message: "yes",
+		},
+	},
 ];
 
 export default function Home() {
@@ -73,10 +83,15 @@ export default function Home() {
 		startDate: new Date(),
 	});
 
-	const observerRef = useCallback(
+	const observerRef = useRef<IntersectionObserver | null>(null);
+
+	const observerDomRef = useCallback(
 		(node: HTMLElement | null) => {
-			if (!node) return;
-			const intersectionObserver = new IntersectionObserver(
+			if (observerRef.current) {
+				observerRef.current.disconnect();
+			}
+
+			observerRef.current = new IntersectionObserver(
 				(entries) => {
 					entries.forEach((entry) => {
 						if (entry.isIntersecting) {
@@ -107,11 +122,9 @@ export default function Home() {
 					rootMargin: "100px",
 				},
 			);
-			intersectionObserver.observe(node);
 
-			return () => {
-				intersectionObserver.disconnect();
-			};
+			if (!node) return;
+			observerRef.current.observe(node);
 		},
 		[calenderState],
 	);
@@ -133,6 +146,7 @@ export default function Home() {
 			calenderEvents,
 			calenderGrid,
 			calenderEventMap,
+			loadedRows: WEEK_COUNT_TO_LOAD,
 			startDate: updatedStartDate,
 		}));
 
@@ -160,6 +174,7 @@ export default function Home() {
 									isFirstWeekOfMonth &&
 									week.some((v) => v.month === 1) &&
 									!week.some((v) => v.month === 2);
+
 								const isObserved =
 									rowIndex + 1 === self.length - WEEK_OFFSET_TO_LOAD;
 
@@ -171,7 +186,7 @@ export default function Home() {
 										exit={{ opacity: 0, y: -20 }}
 										key={rowIndex}
 										className="flex-shrink-0 w-6 h-full flex flex-col"
-										{...(isObserved && { ref: observerRef })}
+										{...(isObserved && { ref: observerDomRef })}
 									>
 										<div className="h-[40px] flex items-center justify-center mb-3">
 											{isFirstWeekOfYear && (
