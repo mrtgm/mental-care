@@ -37,3 +37,14 @@
         name: docker
         enabled: true
         state: started
+
+  roles:
+    - role: artis3n.tailscale
+      vars:
+        verbose: true
+        tailscale_authkey: "{{ taliscale_key }}"
+        tailscale_tags:
+          - server
+        tailscale_oauth_preauthorized: true
+        tailscale_oauth_ephemeral: true
+        tailscale_args: "--ssh"

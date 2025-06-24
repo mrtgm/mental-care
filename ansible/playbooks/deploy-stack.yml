@@ -2,39 +2,35 @@
   hosts: all
   become: true
 
+  vars:
+    file_root: "{{ playbook_dir }}/../vps"
+
   tasks:
-    - name: ディレクトリ {{ app_dir }} の存在確認
+    - name: ディレクトリ {{ app_dir }}/compose の存在確認
       file:
-        path: "{{ app_dir }}"
+        path: "{{ app_dir }}/compose"
         state: directory
         owner: "{{ ansible_user }}"
         group: docker
         mode: "0755"
 
     - name: compose関連ファイルを同期
-      vars:
-        project_root: "{{ playbook_dir }}/../.."
-      synchronize: # copy の代わりに synchronize で高速化
-        src: "{{ project_root }}/{{ item }}"
-        dest: "{{ app_dir }}/{{ item | basename }}"
+      synchronize:
+        src: "{{ file_root }}/compose/"
+        dest: "{{ app_dir }}/compose/"
+        recursive: yes
         checksum: yes
+        delete: yes
         owner: no
         group: no
         perms: no
-      loop:
-        - compose.yml
-        - .env
       register: compose_sync_result
 
     - name: compose関連ファイルの権限設定
-      file:
-        path: "{{ app_dir }}/{{ item | basename }}"
-        owner: "{{ ansible_user }}"
-        group: docker
-        mode: "0644"
-      loop:
-        - compose.yml
-        - .env
+      shell: |
+        chown -R {{ ansible_user }}:docker {{ app_dir }}/compose
+        find {{ app_dir }}/compose -type d -exec chmod 0755 {} \;
+        find {{ app_dir }}/compose -type f -exec chmod 0644 {} \;
       when: compose_sync_result.changed
 
     - name: ディレクトリ {{ app_dir }}/docker の存在確認
@@ -46,10 +42,8 @@
         mode: "0755"
 
     - name: Docker 関連の設定ファイルを同期
-      vars:
-        project_root: "{{ playbook_dir }}/../.."
       synchronize:
-        src: "{{ project_root }}/docker/"
+        src: "{{ file_root }}/docker/"
         dest: "{{ app_dir }}/docker/"
         delete: yes
         recursive: yes
@@ -70,9 +64,10 @@
 
     - name: secrets ディレクトリの存在確認
       stat:
-        path: "{{ playbook_dir }}/../../secrets"
+        path: "{{ file_root }}/secrets"
       register: secrets_dir
       delegate_to: localhost
+      become: false
 
     - name: ディレクトリ {{ app_dir }}/secrets の存在確認
       file:
@@ -85,9 +80,9 @@
 
     - name: secrets ディレクトリを同期
       vars:
-        project_root: "{{ playbook_dir }}/../.."
+        file_root: "{{ playbook_dir }}/../vps"
       synchronize:
-        src: "{{ project_root }}/secrets/"
+        src: "{{ file_root }}/secrets/"
         dest: "{{ app_dir }}/secrets/"
         delete: yes
         recursive: yes
@@ -108,7 +103,7 @@
   handlers:
     - name: reload stack
       community.docker.docker_compose_v2:
-        project_src: "{{ app_dir }}"
+        project_src: "{{ app_dir }}/compose"
         project_name: "mental"
         state: present           # pull + up -d
         pull: missing

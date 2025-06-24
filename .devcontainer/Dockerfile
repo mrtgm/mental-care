@@ -1,18 +1,26 @@
+FROM mcr.microsoft.com/vscode/devcontainers/javascript-node:1-20 AS node-source
 FROM mcr.microsoft.com/devcontainers/go:latest
 
 ARG username=dev
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends postgresql-client git curl unzip redis-tools zsh
+    && apt-get -y install --no-install-recommends postgresql-client git curl unzip redis-tools zsh tmux
 RUN sudo useradd --create-home --shell /bin/bash ${username}
 RUN sudo usermod -aG sudo ${username}
 RUN echo "${username} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/${username}
 
 # Go Environment
 ENV GOPATH=/home/${username}/go
+ENV PATH=${PATH}:${GOPATH}/bin
 ENV PATH=${PATH}:/usr/local/go/bin
 ENV PATH=${PATH}:/go/bin
 RUN mkdir -p ${GOPATH} && chown -R ${username}:${username} ${GOPATH}
+
+# copy node binaries from node-source (for Biome)
+COPY --from=node-source /usr/local/bin/node /usr/local/bin/
+COPY --from=node-source /usr/local/bin/npm /usr/local/bin/
+COPY --from=node-source /usr/local/bin/npx /usr/local/bin/
+COPY --from=node-source /usr/local/lib/node_modules /usr/local/lib/node_modules
 
 # install bun
 ENV BUN_INSTALL=/bun
@@ -55,6 +63,9 @@ RUN echo 'eval "$(starship init zsh)"' >> /home/${username}/.zshrc
 
 # install just
 RUN curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+
+# tmux
+COPY --chown=${username}:${username} ./.tmux.conf /home/${username}/.tmux.conf
 
 USER ${username}
 

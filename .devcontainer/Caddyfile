@@ -1,0 +1,11 @@
+localhost {
+    tls {
+        issuer internal {
+            lifetime 30d
+            sign_with_root
+        }
+    }
+
+    reverse_proxy /api/* devcontainer:{$BACKEND_PORT}
+    reverse_proxy devcontainer:{$FRONTEND_PORT}
+}

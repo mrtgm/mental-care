@@ -7,5 +7,6 @@
 .env.common
 
 
-/secrets
+**/secrets
 ghcr
+caddy-root-ca.crt

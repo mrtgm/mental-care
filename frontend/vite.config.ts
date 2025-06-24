@@ -1,19 +1,27 @@
 import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "vite";
+import path from "path";
+import { defineConfig, loadEnv } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-export default defineConfig({
-  plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
-  resolve: process.env.NODE_ENV === 'development'
-			? {}
-			: {
-					alias: {
-						'react-dom/server': 'react-dom/server.node',
+export default defineConfig(({ mode }) => {
+	const env = loadEnv(mode, path.resolve(__dirname, "../"), "");
+
+	return {
+		plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
+		resolve:
+			mode === "development"
+				? {}
+				: {
+						alias: {
+							"react-dom/server": "react-dom/server.node",
+						},
 					},
-			  },
-	server: {
-    host: '0.0.0.0',
-    port: 3001,
-  },
+
+		// 開発用ポート
+		server: {
+			host: "0.0.0.0",
+			port: env.FRONTEND_PORT ? parseInt(env.FRONTEND_PORT, 10) : 3000,
+		},
+	};
 });

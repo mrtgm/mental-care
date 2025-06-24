@@ -1,33 +1,40 @@
 name: Build and Deploy
 
 on:
-    workflow_call:
-        inputs:
-            environment:
-                description: 'Deployment environment (staging/prod)'
-                required: true
-                type: string
-            image_tag:
-                description: 'Docker image tag'
-                required: true
-                type: string
-            compose_services:
-                description: 'Docker Compose services to deploy'
-                required: true
-                type: string
-        secrets:
-            CR_PAT:
-                required: true
-            VPS_HOST:
-                required: true
-            VPS_USER:
-                required: true
-            VPS_SSH_KEY:
-                required: true
-            VPS_PORT:
-                required: true
-            VAULT_PASSWORD:
-                required: true
+  workflow_call:
+    inputs:
+      environment:
+        description: "Deployment environment (staging/prod)"
+        required: true
+        type: string
+      image_tag:
+        description: "Docker image tag"
+        required: true
+        type: string
+      compose_services:
+        description: "Docker Compose services to deploy"
+        required: true
+        type: string
+    secrets:
+      CR_PAT:
+        required: true
+      VPS_HOST:
+        required: true
+      VPS_USER:
+        required: true
+      VPS_SSH_KEY:
+        required: true
+      VPS_PORT:
+        required: true
+      VAULT_PASSWORD:
+        required: true
+      SLACK_WEBHOOK_URL:
+        required: true
+      TS_OAUTH_CLIENT_ID:
+        required: true
+      TS_OAUTH_SECRET:
+        required: true
+
 
 env:
   REGISTRY: ghcr.io
@@ -41,20 +48,18 @@ jobs:
       backend-changed: ${{ steps.changes.outputs.backend }}
       ansible-changed: ${{ steps.changes.outputs.ansible }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: dorny/paths-filter@v2
-      id: changes
-      with:
-        base: ${{ github.event.before }}
-        filters: |
-          frontend:
-            - 'frontend/**'
-          backend:
-            - 'backend/**'
-          ansible:
-            - 'ansible/**'
-            - 'compose.yml'
-            - '.env'
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          base: ${{ github.event.before }}
+          filters: |
+            frontend:
+              - 'frontend/**'
+            backend:
+              - 'backend/**'
+            ansible:
+              - 'ansible/**'
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -62,29 +67,47 @@ jobs:
     if: needs.detect-changes.outputs.frontend-changed == 'true'
     permissions: { contents: read, packages: write }
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        id: setup-buildx
 
-    - name: Login to GHCR
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.CR_PAT }}
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_PAT }}
 
-    - name: Build + push frontend
-      uses: docker/build-push-action@v5
-      with:
-        context: ./frontend
-        push: true
-        tags: |
-          ${{ env.IMAGE_PREFIX }}frontend:${{ inputs.image_tag }}
-          ${{ env.IMAGE_PREFIX }}frontend:${{ inputs.image_tag }}-${{ github.sha }}
-        cache-from: type=gha,scope=frontend-${{ inputs.image_tag }}
-        cache-to: type=gha,mode=max,scope=frontend-${{ inputs.image_tag }}
-        platforms: linux/amd64
+      - name: Cache frontend dependencies
+        uses: actions/cache@v4
+        id: frontend-cache
+        with:
+          path: bun-cache
+          key: ${{ runner.os }}-bun-cache-${{ hashFiles('frontend/bun.lockb') }}
+
+      - name: Restore Docker cache mounts
+        uses: reproducible-containers/buildkit-cache-dance@v3
+        with:
+          builder: ${{ steps.setup-buildx.outputs.name }}
+          cache-map: |
+            {
+              "bun-cache": "/root/.bun"
+            }
+          skip-extraction: ${{ steps.frontend-cache.outputs.cache-hit }}
+
+      - name: Build + push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}frontend:${{ inputs.image_tag }}
+            ${{ env.IMAGE_PREFIX }}frontend:${{ inputs.image_tag }}-${{ github.sha }}
+          cache-from: type=gha,scope=frontend-${{ inputs.image_tag }}
+          cache-to: type=gha,mode=max,scope=frontend-${{ inputs.image_tag }}
+          platforms: linux/amd64
 
   build-backend:
     runs-on: ubuntu-latest
@@ -92,29 +115,47 @@ jobs:
     if: needs.detect-changes.outputs.backend-changed == 'true'
     permissions: { contents: read, packages: write }
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        id: setup-buildx
 
-    - name: Login to GHCR
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.CR_PAT }}
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.CR_PAT }}
 
-    - name: Build + push backend
-      uses: docker/build-push-action@v5
-      with:
-        context: ./backend
-        push: true
-        tags: |
-          ${{ env.IMAGE_PREFIX }}backend:${{ inputs.image_tag }}
-          ${{ env.IMAGE_PREFIX }}backend:${{ inputs.image_tag }}-${{ github.sha }}
-        cache-from: type=gha,scope=backend-${{ inputs.image_tag }}
-        cache-to: type=gha,mode=max,scope=backend-${{ inputs.image_tag }}
-        platforms: linux/amd64
+      - name: Cache
+        uses: actions/cache@v4
+        id: go-build-cache
+        with:
+          path: go-build-cache
+          key: ${{ runner.os }}-go-build-cache-${{ hashFiles('backend/go.sum') }}
+
+      - name: Restore Docker cache mounts
+        uses: reproducible-containers/buildkit-cache-dance@v3
+        with:
+          builder: ${{ steps.setup-buildx.outputs.name }}
+          cache-map: |
+            {
+              "go-build-cache": "/root/.cache/go-build"
+            }
+          skip-extraction: ${{ steps.go-build-cache.outputs.cache-hit }}
+
+      - name: Build + push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}backend:${{ inputs.image_tag }}
+            ${{ env.IMAGE_PREFIX }}backend:${{ inputs.image_tag }}-${{ github.sha }}
+          cache-from: type=gha,scope=backend-${{ inputs.image_tag }}
+          cache-to: type=gha,mode=max,scope=backend-${{ inputs.image_tag }}
+          platforms: linux/amd64
 
   deploy:
     runs-on: ubuntu-latest
@@ -129,36 +170,68 @@ jobs:
         )
       )
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Setup unified SSH configuration
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
-        chmod 600 ~/.ssh/id_ed25519
+      - name: Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          use-cache: 'true'
 
-    - name: Apply Ansible Playbook
-      if: needs.detect-changes.outputs.ansible-changed == 'true'
-      uses: dawidd6/action-ansible-playbook@v2
-      with:
-        playbook: ansible/playbooks/deploy-stack.yml
-        key: ${{ secrets.VPS_SSH_KEY }}
-        vault_password: ${{ secrets.VAULT_PASSWORD }}
-        inventory: |
-          [vps]
-          ${{ secrets.VPS_HOST }} ansible_user=${{ secrets.VPS_USER }} ansible_port=${{ secrets.VPS_PORT }} ansible_become=true
-        options: |
-          --extra-vars "@ansible/inventory/group_vars/vps.yml"
+      - name: Setup unified SSH configuration
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
 
-    - name: Deploy to VPS
-      uses: appleboy/ssh-action@v1
-      with:
-        host:   ${{ secrets.VPS_HOST }}
-        username:   ${{ secrets.VPS_USER }}
-        key:    ${{ secrets.VPS_SSH_KEY }}
-        port:   ${{ secrets.VPS_PORT }}
-        script: |
-          cd /opt/mental
-          docker compose pull ${{ inputs.compose_services }}
-          docker compose up -d --wait --no-deps ${{ inputs.compose_services }}
-          docker image prune -af --filter "until=240h"
+      - name: Apply Ansible Playbook
+        if: needs.detect-changes.outputs.ansible-changed == 'true'
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: ansible/playbooks/deploy-stack.yml
+          key: ${{ secrets.VPS_SSH_KEY }}
+          vault_password: ${{ secrets.VAULT_PASSWORD }}
+          inventory: |
+            [vps]
+            ${{ secrets.VPS_HOST }} ansible_user=${{ secrets.VPS_USER }} ansible_port=${{ secrets.VPS_PORT }} ansible_become=true
+          options: |
+            --extra-vars "@ansible/inventory/group_vars/vps.yml"
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            cd /opt/mental/compose
+            docker compose pull ${{ inputs.compose_services }}
+            docker compose up -d --wait --no-deps ${{ inputs.compose_services }}
+            docker image prune -af --filter "until=240h"
+
+  notify-deployment:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+    permissions: { contents: read, actions: read }
+    steps:
+      - name: Determine overall status
+        id: message
+        run: |
+          RESULTS="${{ needs.build-frontend.result }} ${{ needs.build-backend.result }} ${{ needs.deploy.result }}"
+          case "$RESULTS" in
+            *failure*) echo "status=failure" ;;
+            *success*) echo "status=success" ;;
+            *) echo "status=cancelled" ;;
+          esac >> $GITHUB_OUTPUT
+
+      - name: Notify deployment status
+        uses: 8398a7/action-slack@v3
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        with:
+          status: ${{ steps.message.outputs.status }}
+          fields: repo,message,commit,author
