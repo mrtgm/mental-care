@@ -4,6 +4,10 @@ on:
   push:
     branches: [devel]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy-staging:
     uses: ./.github/workflows/deploy.yml

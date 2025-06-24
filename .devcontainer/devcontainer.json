@@ -14,6 +14,7 @@
       "version": "latest"
     }
   },
+  "initializeCommand": "just clean",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -53,8 +54,7 @@
     }
   },
   "forwardPorts": [
-    8080,
-    3001
+   80, 443
   ],
   "remoteUser": "dev"
 }

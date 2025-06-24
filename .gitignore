@@ -9,3 +9,4 @@
 
 **/secrets
 ghcr
+caddy-root-ca.crt

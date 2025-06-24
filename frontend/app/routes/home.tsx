@@ -1,5 +1,13 @@
-import { useEffect, useRef } from "react";
-import { redirect } from "react-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	WEEK_COUNT_TO_LOAD,
+	WEEK_OFFSET_TO_LOAD,
+} from "~/features/calender/domains/events/constants";
+import {
+	attachEventsToGrid,
+	type CalenderGrid,
+	calcGrid,
+} from "~/features/calender/domains/events/domain";
 import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
@@ -9,31 +17,89 @@ export function meta({}: Route.MetaArgs) {
 	];
 }
 
-export default function Home() {
-	const RENDER_NUMBER = 161; // Number of items to render
-	const INITIAL_COLS = 20; // Initial number of columns
-
-	// const calcMonthLabel = (): {month: number, } => {
-
-	const test = [
-		{
-			month: 5,
-			col: 20,
-			year: 2025,
+const events = [
+	{
+		year: 2025,
+		month: 5,
+		date: 30,
+		content: {
+			message: "yes",
 		},
-	];
+	},
+	{
+		year: 2025,
+		month: 3,
+		date: 23,
+		content: {
+			message: "yes",
+		},
+	},
+	{
+		year: 2024,
+		month: 3,
+		date: 23,
+		content: {
+			message: "yes",
+		},
+	},
+];
 
+export default function Home() {
 	const ref = useRef<HTMLDivElement>(null);
 
-	const initialDate = useRef<{
-		day: number;
-		index: number;
-	}>({
-		day: new Date().getDay(),
-		index: INITIAL_COLS * 7 + new Date().getDay(),
-	});
+	const [consumedEventCount, setConsumedEventCount] = useState(0);
+	const [grid, setGrid] = useState<CalenderGrid>([]);
+	const [lastGridDate, setLastGridDate] = useState<Date>(new Date());
+
+	const observerRef = useCallback(
+		(node: HTMLElement | null) => {
+			if (!node) return;
+			const intersectionObserver = new IntersectionObserver(
+				(entries) => {
+					entries.forEach((entry) => {
+						if (entry.isIntersecting && consumedEventCount < events.length) {
+							// ここでホントは 新規に読むこむべきイベントがある時、fetch
+							// loding 中なら弾く、とか
+
+							const { grid: newGrids, lastGridDate: newLastGridDate } =
+								calcGrid(WEEK_COUNT_TO_LOAD, lastGridDate);
+
+							const { gridWithEvents, updatedConsumedEventCount } =
+								attachEventsToGrid(newGrids, events, consumedEventCount);
+
+							setConsumedEventCount(updatedConsumedEventCount);
+							setGrid((prev) => [...prev, ...gridWithEvents]);
+							setLastGridDate(newLastGridDate);
+						}
+					});
+				},
+				{
+					threshold: 0.1,
+					rootMargin: "100px",
+				},
+			);
+			intersectionObserver.observe(node);
+
+			return () => {
+				intersectionObserver.disconnect();
+			};
+		},
+		[grid, lastGridDate],
+	);
 
 	useEffect(() => {
+		const { grid, lastGridDate } = calcGrid(WEEK_COUNT_TO_LOAD, new Date());
+
+		const { gridWithEvents, updatedConsumedEventCount } = attachEventsToGrid(
+			grid,
+			events,
+			consumedEventCount,
+		);
+
+		setConsumedEventCount(updatedConsumedEventCount);
+		setGrid(gridWithEvents);
+		setLastGridDate(lastGridDate);
+
 		ref.current?.scrollTo({
 			left: ref.current.scrollWidth,
 		});
@@ -42,48 +108,42 @@ export default function Home() {
 	return (
 		<div className="w-[70%] mx-auto">
 			<div
-				className="w-full aspect-[10/3] bg-gray-300 overflow-x-scroll flex flex-col relative text-indigo-950"
+				className="w-full aspect-[10/3] bg-gray-300 overflow-x-scroll flex flex-row-reverse
+				relative text-indigo-950 gap-[1%] p-[0.5%] flex-nowrap"
 				ref={ref}
 			>
-				?
-				<div className="flex flex-nowrap flex-row-reverse w-full h-full overflow-x-scroll gap-x-[0.5%] relative pt-[2%]">
-					<div className="flex flex-nowrap flex-row-reverse w-full gap-x-[0.5%] h-[5%] absolute top-0 right-0">
-						<div
-							className="w-full grid grid-cols-23 py-[0.5%] gap-x-[0.5%] gap-y-[2%] h-full shrink-0 grid-flow-col-dense"
-							style={{ direction: "rtl" }}
-						>
-							{Array.from({ length: 23 }).map((_, index) => (
-								<span
-									key={index}
-									className="text-xs text-gray-500"
-									style={{ width: "100%" }}
-								>
-									{index + 1}
-								</span>
-							))}
-						</div>
-					</div>
+				{grid.map((week, rowIndex, self) => {
+					const isFirstWeek = !!week.find((v) => v?.date.getDate() === 1);
+					const isObserved = rowIndex + 1 === self.length - WEEK_OFFSET_TO_LOAD;
 
-					<div
-						className="grid grid-rows-7 py-[0.5%] gap-x-[0.5%] gap-y-[2%] w-full h-full shrink-0 grid-flow-col-dense"
-						style={{ gridTemplateColumns: "repeat(23, 1fr)" }}
-					>
-						{Array.from({ length: RENDER_NUMBER }).map((_, index) => (
+					return (
+						<>
 							<div
-								key={index}
-								className="bg-white rounded-[2%] shadow-sm"
-								style={{
-									width: "100%",
-									height: "100%",
-									backgroundColor:
-										index === initialDate.current.index ? "lightblue" : "white",
-								}}
+								key={rowIndex}
+								className="shrink-0 w-[3%] grid-rows-8 grid"
+								{...(isObserved && { ref: observerRef })}
 							>
-								{/* {index - RENDER_NUMBER} */}
+								<div className="row-span-1 flex items-end justify-center">
+									{isFirstWeek ? (week.at(0)?.date.getMonth() ?? 0) + 1 : null}
+								</div>
+								<div className="row-span-7 grid-rows-7 h-full grid gap-[1%]">
+									{week.map((v, columnIndex) => {
+										return (
+											<div
+												key={v ? v.dateString : columnIndex}
+												className={`bg-white flex justify-center items-center`}
+												style={{ order: 7 - columnIndex }}
+											>
+												{v ? v.event?.message : null}
+												{/* {v ? v.date.getDate() : null} */}
+											</div>
+										);
+									})}
+								</div>
 							</div>
-						))}
-					</div>
-				</div>
+						</>
+					);
+				})}
 			</div>
 		</div>
 	);

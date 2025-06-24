@@ -59,3 +59,8 @@ dev:
 # 既存のセッションにアタッチ
 attach:
     tmux attach-session -t mental-care-dev
+
+# Caddy のルート証明書をコピーして Keychain に追加
+local-tls:
+    docker cp caddy-local:/data/caddy/pki/authorities/local/root.crt ./caddy-root-ca.crt
+    sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain ./caddy-root-ca.crt

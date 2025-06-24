@@ -16,16 +16,17 @@ services:
     container_name: caddy-local
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
-    env_file: [../.env.local]
+    env_file: [ ../.env.local ]
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - devcontainer
 
   db:
     image: postgres:15
     container_name: db-local
-    env_file: [../.env.local]
+    env_file: [ ../.env.local ]
     ports:
       - "5432:5432"
     volumes:
