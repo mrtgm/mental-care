@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Button } from "@/components/shadcn/button";
 import {
 	Drawer,
 	DrawerClose,
@@ -93,6 +94,9 @@ export default function Home() {
 		startDate: new Date(),
 	});
 
+	const [selectedDay, setSelectedDay] = useState<any>(null);
+	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
 	const observerRef = useRef<IntersectionObserver | null>(null);
 
 	const observerDomRef = useCallback(
@@ -165,6 +169,13 @@ export default function Home() {
 		});
 	}, []);
 
+	// 日付クリック時の処理
+	const handleDayClick = (day: any, content: any) => {
+		if (day.dateObj > new Date()) return; // 未来の日付はクリック不可
+		setSelectedDay({ ...day, content });
+		setIsDrawerOpen(true);
+	};
+
 	// 仮のマークダウンコンテンツ
 	const sampleMarkdown = `# Sample Markdown Content
 
@@ -201,12 +212,21 @@ const example = () => {
 	return (
 		<TooltipProvider>
 			<div className="w-full max-w-7xl mx-auto px-6 py-8 bg-white min-h-screen">
-				<div className="mb-2">
-					<h1 className="text-3xl font-bold text-gray-600 mb-3">log</h1>
+				<div className="mb-2 w-full flex items-center justify-between">
+					<h1 className="text-3xl font-bold text-orange-600 mb-3">log</h1>
+
+					<div className="flex items-center gap-2">
+						<Button
+							variant="ghost"
+							className="text-orange-600 hover:bg-red-50 hover:text-orange-700 cursor-pointer"
+						>
+							Login
+						</Button>
+					</div>
 				</div>
 
 				{/* カレンダー本体 */}
-				<div className="bg-white rounded-2xl border-gray-200 p-6 relative">
+				<div className="bg-white rounded-2xl border-gray-200 p-6 relative mb-8">
 					<div className="absolute left-0 top-0 bottom-0 w-32 h-72 bg-gradient-to-r from-white to-transparent pointer-events-none z-10" />
 
 					<div
@@ -237,12 +257,12 @@ const example = () => {
 									>
 										<div className="h-[40px] flex items-center justify-center mb-3">
 											{isFirstWeekOfYear && (
-												<span className="absolute top-0 text-sm text-gray-500">
+												<span className="absolute top-0 text-sm text-orange-300">
 													{week.at(0)?.year ?? 0}
 												</span>
 											)}
 											{isFirstWeekOfMonth && (
-												<span className="absolute top-[26px] text-xs text-gray-500">
+												<span className="absolute top-[26px] text-xs text-orange-300">
 													{getMonthName(week.at(0)?.month)}
 												</span>
 											)}
@@ -262,16 +282,17 @@ const example = () => {
 															<div
 																className={`
 																w-6 h-6 rounded-md border-1 transition-all duration-300
-																hover:scale-110 hover:shadow-md cursor-pointer
+																hover:scale-110 hover:shadow-md
 																${
 																	isFutureDate
-																		? "bg-gray-50 border-white pointer-events-none"
+																		? "bg-gray-50 border-white cursor-not-allowed"
 																		: hasContent
-																			? "bg-orange-500 border-orange-600 hover:bg-orange-600 shadow-sm"
-																			: "bg-gray-100 border-gray-200 hover:bg-gray-200 hover:border-gray-300"
+																			? "bg-orange-500 border-orange-600 hover:bg-orange-600 shadow-sm cursor-pointer"
+																			: "bg-gray-100 border-gray-200 hover:bg-gray-200 hover:border-gray-300 cursor-pointer"
 																}
 															`}
 																style={{ order: 7 - columnIndex }}
+																onClick={() => handleDayClick(day, content)}
 															></div>
 														</TooltipTrigger>
 														<TooltipContent
@@ -306,7 +327,7 @@ const example = () => {
 					</div>
 				</div>
 
-				<div className="bg-white rounded-2xl border border-gray-200 p-6">
+				{/* <div className="bg-white rounded-2xl border border-gray-200 p-6">
 					<div className="mb-4 flex items-center justify-between">
 						<h2 className="text-xl font-semibold text-gray-700">詳細</h2>
 						<span className="text-sm text-gray-500">Edit</span>
@@ -317,7 +338,60 @@ const example = () => {
 							{sampleMarkdown}
 						</div>
 					</div>
-				</div>
+				</div> */}
+
+				{/* Drawer for editing */}
+				<Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+					<DrawerContent className="h-full max-h-[90vh] overflow-y-auto">
+						<div className="mx-auto w-full max-w-sm">
+							<DrawerHeader>
+								<DrawerTitle>
+									{selectedDay
+										? `${selectedDay.year}/${selectedDay.month}/${selectedDay.date}`
+										: "日付を編集"}
+								</DrawerTitle>
+							</DrawerHeader>
+
+							<div className="p-4 pb-0">
+								<div className="space-y-4">
+									<DrawerDescription className="text-sm text-gray-600">
+										日付の詳細を編集します。マークダウン形式で内容を入力してください。
+									</DrawerDescription>
+
+									<div className="space-y-2">
+										<label className="block text-sm font-medium text-gray-700">
+											内容
+										</label>
+										<textarea
+											className="w-full h-32 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+											value={selectedDay?.content?.message || ""}
+										/>
+									</div>
+
+									<div className="flex gap-2">
+										<Button className="bg-orange-500 text-white hover:bg-orange-600 flex-1">
+											Save
+										</Button>
+										<Button
+											variant="outline"
+											className="text-orange-600 border-orange-600 hover:bg-red-50 hover:text-orange-700 flex-1"
+										>
+											Clear
+										</Button>
+									</div>
+								</div>
+							</div>
+
+							<DrawerFooter>
+								<DrawerClose asChild>
+									<button className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors">
+										キャンセル
+									</button>
+								</DrawerClose>
+							</DrawerFooter>
+						</div>
+					</DrawerContent>
+				</Drawer>
 			</div>
 		</TooltipProvider>
 	);
