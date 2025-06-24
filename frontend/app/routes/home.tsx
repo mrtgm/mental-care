@@ -213,7 +213,7 @@ const example = () => {
 		<TooltipProvider>
 			<div className="w-full max-w-7xl mx-auto px-6 py-8 bg-white min-h-screen">
 				<div className="mb-2 w-full flex items-center justify-between">
-					<h1 className="text-3xl font-bold text-orange-600 mb-3">log</h1>
+					<h1 className="text-3xl font-bold text-orange-600 mb-3">📝 log</h1>
 
 					<div className="flex items-center gap-2">
 						<Button
@@ -257,12 +257,12 @@ const example = () => {
 									>
 										<div className="h-[40px] flex items-center justify-center mb-3">
 											{isFirstWeekOfYear && (
-												<span className="absolute top-0 text-sm text-orange-300">
+												<span className="absolute top-0 text-sm text-orange-600">
 													{week.at(0)?.year ?? 0}
 												</span>
 											)}
 											{isFirstWeekOfMonth && (
-												<span className="absolute top-[26px] text-xs text-orange-300">
+												<span className="absolute top-[26px] text-xs text-orange-600">
 													{getMonthName(week.at(0)?.month)}
 												</span>
 											)}
@@ -354,13 +354,9 @@ const example = () => {
 
 							<div className="p-4 pb-0">
 								<div className="space-y-4">
-									<DrawerDescription className="text-sm text-gray-600">
-										日付の詳細を編集します。マークダウン形式で内容を入力してください。
-									</DrawerDescription>
-
 									<div className="space-y-2">
 										<label className="block text-sm font-medium text-gray-700">
-											内容
+											Content
 										</label>
 										<textarea
 											className="w-full h-32 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -385,7 +381,7 @@ const example = () => {
 							<DrawerFooter>
 								<DrawerClose asChild>
 									<button className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors">
-										キャンセル
+										Cancel
 									</button>
 								</DrawerClose>
 							</DrawerFooter>
