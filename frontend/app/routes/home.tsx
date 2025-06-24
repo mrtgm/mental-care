@@ -1,6 +1,16 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+	Drawer,
+	DrawerClose,
+	DrawerContent,
+	DrawerDescription,
+	DrawerFooter,
+	DrawerHeader,
+	DrawerTitle,
+	DrawerTrigger,
+} from "@/components/shadcn/drawer";
+import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
@@ -155,9 +165,46 @@ export default function Home() {
 		});
 	}, []);
 
+	// 仮のマークダウンコンテンツ
+	const sampleMarkdown = `# Sample Markdown Content
+
+## 概要
+ここにマークダウンコンテンツが表示されます。
+
+### 機能
+- **カレンダー表示**: 日付ごとのイベントを視覚的に表示
+- **マークダウン対応**: リッチテキストの表示が可能
+- **レスポンシブデザイン**: 様々な画面サイズに対応
+
+### コードブロック
+\`\`\`javascript
+const example = () => {
+  console.log("Hello, World!");
+};
+\`\`\`
+
+### リスト
+1. 第一項目
+2. 第二項目
+3. 第三項目
+
+### 引用
+> これは引用文です。マークダウンの様々な機能を活用できます。
+
+---
+
+### 注意事項
+- 現在は仮のコンテンツが表示されています
+- 実際の使用時は動的にコンテンツを読み込みます
+`;
+
 	return (
 		<TooltipProvider>
 			<div className="w-full max-w-7xl mx-auto px-6 py-8 bg-white min-h-screen">
+				<div className="mb-2">
+					<h1 className="text-3xl font-bold text-gray-600 mb-3">log</h1>
+				</div>
+
 				{/* カレンダー本体 */}
 				<div className="bg-white rounded-2xl border-gray-200 p-6 relative">
 					<div className="absolute left-0 top-0 bottom-0 w-32 h-72 bg-gradient-to-r from-white to-transparent pointer-events-none z-10" />
@@ -207,6 +254,7 @@ export default function Home() {
 													`${rowIndex}:${columnIndex}`,
 												);
 												const hasContent = Boolean(content?.message);
+												const isFutureDate = day.dateObj > new Date();
 
 												return (
 													<Tooltip key={day.dateString}>
@@ -216,9 +264,11 @@ export default function Home() {
 																w-6 h-6 rounded-md border-1 transition-all duration-300
 																hover:scale-110 hover:shadow-md cursor-pointer
 																${
-																	hasContent
-																		? "bg-orange-500 border-orange-600 hover:bg-orange-600 shadow-sm"
-																		: "bg-gray-100 border-gray-200 hover:bg-gray-200 hover:border-gray-300"
+																	isFutureDate
+																		? "bg-gray-50 border-white pointer-events-none"
+																		: hasContent
+																			? "bg-orange-500 border-orange-600 hover:bg-orange-600 shadow-sm"
+																			: "bg-gray-100 border-gray-200 hover:bg-gray-200 hover:border-gray-300"
 																}
 															`}
 																style={{ order: 7 - columnIndex }}
@@ -252,6 +302,19 @@ export default function Home() {
 								<div className="w-4 h-4 rounded-sm bg-orange-500 border-1 border-orange-600"></div>
 								<div className="w-4 h-4 rounded-sm bg-orange-700 border-1 border-orange-800"></div>
 							</div>
+						</div>
+					</div>
+				</div>
+
+				<div className="bg-white rounded-2xl border border-gray-200 p-6">
+					<div className="mb-4 flex items-center justify-between">
+						<h2 className="text-xl font-semibold text-gray-700">詳細</h2>
+						<span className="text-sm text-gray-500">Edit</span>
+					</div>
+
+					<div className="prose prose-sm max-w-none">
+						<div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+							{sampleMarkdown}
 						</div>
 					</div>
 				</div>
