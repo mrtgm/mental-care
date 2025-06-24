@@ -10,6 +10,7 @@ import {
 	calcCalenderEventMap,
 	calcGrid,
 } from "~/features/calender/domains/events/domain";
+import { getMonthName } from "~/utils/date";
 import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
@@ -134,63 +135,85 @@ export default function Home() {
 	}, []);
 
 	return (
-		<div className="w-[70%] mx-auto">
-			<div
-				className="w-full aspect-[10/3] bg-gray-300 overflow-x-scroll flex flex-row-reverse
-				relative text-indigo-950 gap-[1%] p-[0.5%] flex-nowrap"
-				ref={ref}
-			>
-				{calenderState.calenderGrid.map((week, rowIndex, self) => {
-					const isFirstWeekOfMonth = week.some((v) => v.date.getDate() === 1);
+		<div className="w-full max-w-7xl mx-auto px-6 py-8 bg-white min-h-screen">
+			{/* カレンダー本体 */}
+			<div className="bg-white rounded-2xl border-gray-200 p-6 relative">
+				<div className="absolute left-0 top-0 bottom-0 w-32 h-72 bg-gradient-to-r from-white to-transparent pointer-events-none z-10" />
 
-					const isFirstWeekOfYear =
-						isFirstWeekOfMonth &&
-						week.some((v) => v.date.getMonth() === 0) &&
-						week.every((v) => v.date.getMonth() !== 1);
+				<div
+					className="w-full h-64 overflow-x-scroll overflow-y-visible flex flex-row-reverse
+					relative gap-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+					ref={ref}
+				>
+					{calenderState.calenderGrid.map((week, rowIndex, self) => {
+						const isFirstWeekOfMonth = week.some((v) => v.date === 1);
+						const isFirstWeekOfYear =
+							isFirstWeekOfMonth &&
+							week.some((v) => v.month === 1) &&
+							!week.some((v) => v.month === 2);
+						const isObserved =
+							rowIndex + 1 === self.length - WEEK_OFFSET_TO_LOAD;
 
-					const isObserved = rowIndex + 1 === self.length - WEEK_OFFSET_TO_LOAD;
-
-					return (
-						<>
+						return (
 							<div
 								key={rowIndex}
-								className="shrink-0 w-[3%] grid-rows-8 grid"
+								className="flex-shrink-0 w-6 h-full flex flex-col"
 								{...(isObserved && { ref: observerRef })}
 							>
-								<div className="row-span-1 flex items-end justify-center flex-col">
-									<span>
-										{isFirstWeekOfYear
-											? (week.at(0)?.date.getFullYear() ?? 0)
-											: null}
-									</span>
-									<span>
-										{isFirstWeekOfMonth
-											? (week.at(0)?.date.getMonth() ?? 0) + 1
-											: null}
-									</span>
+								<div className="h-[40px] flex items-center justify-center mb-3">
+									{isFirstWeekOfYear && (
+										<span className="absolute top-0 text-sm text-gray-500">
+											{week.at(0)?.year ?? 0}
+										</span>
+									)}
+									{isFirstWeekOfMonth && (
+										<span className="absolute top-[20px] text-sm text-gray-500">
+											{getMonthName(week.at(0)?.month)}
+										</span>
+									)}
 								</div>
-								<div className="row-span-7 grid-rows-7 h-full grid gap-[1%]">
+
+								<div className="flex-1 flex flex-col gap-1.5">
 									{week.map((day, columnIndex) => {
+										const content = calenderState.calenderEventMap.get(
+											`${rowIndex}:${columnIndex}`,
+										);
+										const hasContent = Boolean(content?.message);
+
 										return (
 											<div
 												key={day.dateString}
-												className={`bg-white flex justify-center items-center`}
+												className={`
+													w-6 h-6 rounded-lg border-1 transition-all duration-300
+													hover:scale-110 hover:shadow-md cursor-pointer
+													${
+														hasContent
+															? "bg-orange-500 border-orange-600 hover:bg-orange-600 shadow-sm"
+															: "bg-gray-100 border-gray-200 hover:bg-gray-200 hover:border-gray-300"
+													}
+												`}
 												style={{ order: 7 - columnIndex }}
-											>
-												{
-													calenderState.calenderEventMap.get(
-														`${rowIndex}:${columnIndex}`,
-													)?.message
-												}
-												{day.date.getDate()}
-											</div>
+												title={`${day.year}/${day.month}/${day.date}${hasContent ? ` - ${content?.message}` : ""}`}
+											></div>
 										);
 									})}
 								</div>
 							</div>
-						</>
-					);
-				})}
+						);
+					})}
+				</div>
+
+				<div className="flex items-center justify-between mt-6 pt-6 border-t-1 border-gray-200">
+					<div className="flex items-center gap-3 text-sm text-gray-700">
+						<div className="flex gap-1.5">
+							<div className="w-4 h-4 rounded-md bg-orange-100 border-1 border-orange-200"></div>
+							<div className="w-4 h-4 rounded-md bg-orange-200 border-1 border-orange-300"></div>
+							<div className="w-4 h-4 rounded-md bg-orange-400 border-1 border-orange-500"></div>
+							<div className="w-4 h-4 rounded-md bg-orange-500 border-1 border-orange-600"></div>
+							<div className="w-4 h-4 rounded-md bg-orange-700 border-1 border-orange-800"></div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	);

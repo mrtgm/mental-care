@@ -15,7 +15,10 @@ export type CalenderEventContent = {
 };
 
 export type GridDay = {
-	date: Date;
+	year: number;
+	month: number;
+	date: number;
+	dateObj: Date;
 	event: CalenderEventContent | null;
 	dateString: string;
 };
@@ -35,9 +38,11 @@ const calcCalenderGridIndex = (event: CalenderEvent) => {
 	// 土曜に
 	now.setDate(now.getDate() + (6 - now.getDay()));
 
-	return `${
-		((now.getTime() - eventDate.getTime()) / (1000 * 60 * 60 * 24 * 7)) | 0
-	}:${6 - eventDate.getDay()}` as `${number}:${number}`;
+	const rowIndex =
+		((now.getTime() - eventDate.getTime()) / (1000 * 60 * 60 * 24 * 7)) | 0;
+	const columnIndex = 6 - eventDate.getDay();
+
+	return `${rowIndex}:${columnIndex}` as `${number}:${number}`;
 };
 
 export const calcCalenderEventMap = (
@@ -71,7 +76,10 @@ export const calcGrid = (
 
 		for (let i = 0; i < 7; i++) {
 			week.push({
-				date: new Date(now),
+				year: now.getFullYear(),
+				month: now.getMonth() + 1,
+				date: now.getDate(),
+				dateObj: new Date(now),
 				dateString: now.toLocaleString(),
 				event: null,
 			});
