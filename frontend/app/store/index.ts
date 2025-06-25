@@ -8,6 +8,7 @@ import {
 } from "zustand";
 import { devtools, subscribeWithSelector } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
+import { useShallow } from "zustand/react/shallow";
 import {
 	type CalenderSlice,
 	createCalenderSlice,
@@ -48,16 +49,21 @@ const createSelector = <S extends UseBoundStore<StoreApi<object>>>(
 		sliceKeysCache.set(sliceName, keys);
 	}
 
+	console.log("ok?");
+
 	// 抽出したキーを下にストアを分割、selector を作成
 	for (const sliceName of Object.keys(sliceDefinitions)) {
 		const sliceKeys = sliceKeysCache.get(sliceName) || [];
 
 		(store.useSlice as any)[sliceName] = () =>
-			Object.assign({}, store.getState(), {
+			Object.assign(
+				{},
 				...sliceKeys.map((key) => ({
-					[key]: store((state) => (state as any)[key]),
+					[key]: store((state) => {
+						return (state as any)[key];
+					}),
 				})),
-			});
+			);
 	}
 
 	return store;

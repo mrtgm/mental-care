@@ -18,7 +18,7 @@ export const EventDetialEditor = ({
 }) => {
 	const calenderStore = useStore.useSlice.calender();
 
-	if (!calenderStore.setSelectedGridDay) {
+	if (!calenderStore.selectedGridDay) {
 		return null; // 選択されていない場合は何も表示しない
 	}
 

@@ -10,6 +10,7 @@ import { useStore } from "@/store";
 import { getMonthName } from "@/utils/date";
 import { WEEK_OFFSET_TO_LOAD } from "../domains/events/constants";
 import type { CalenderEvent, GridDay } from "../domains/events/domain";
+import { CalendarTooltip } from "./tooltip";
 
 export const Calender = ({
 	onDayClick,
@@ -149,7 +150,6 @@ const CalenderDate = ({
 
 	const event = calenderState.eventMap.get(`${rowIndex}:${columnIndex}`);
 
-	const hasEvent = Boolean(event);
 	const isFutureDate = day.dateObj > new Date();
 	const isCurrentDate =
 		day.dateObj.toDateString() === new Date().toDateString();
@@ -166,7 +166,7 @@ const CalenderDate = ({
 								? "bg-green-200 border-green-300 shadow-sm cursor-pointer"
 								: isFutureDate
 									? "bg-gray-50 border-white cursor-not-allowed"
-									: hasEvent
+									: event
 										? "bg-orange-500 border-orange-600 hover:bg-orange-600 shadow-sm cursor-pointer"
 										: "bg-gray-100 border-gray-200 hover:bg-gray-200 hover:border-gray-300 cursor-pointer"
 						}
@@ -176,10 +176,7 @@ const CalenderDate = ({
 				></div>
 			</TooltipTrigger>
 			<TooltipContent side="top" className="bg-black text-white border-black">
-				<p className="text-xs">
-					{day.year}/{day.month}/{day.date}
-					{hasEvent ? ` - ${event?.content.message}` : ""}
-				</p>
+				<CalendarTooltip day={day} event={event} />
 			</TooltipContent>
 		</Tooltip>
 	);

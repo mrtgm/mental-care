@@ -1,12 +1,29 @@
 import { isSameDate } from "@/utils/date";
 
-export type CalenderEvent = {
+export type Achievement = {
 	id: string;
-	// ここはISO8601でいいかな
+	label: string;
+	score: number;
+	type: "positive" | "negative"; // 追加
+};
+
+export type MoodMetrics = {
+	panasSf: {
+		positive: number; // 1-5スケール
+		negative: number; // 1-5スケール
+	};
+	vas: number; // 0-100スケール
+};
+
+export type CalenderEvent = {
+	id: string; // ここはISO8601でいいかな
 	year: number;
 	month: number;
 	date: number;
-	content: CalenderEventContent;
+	wakeUpTime: string; // "HH:MM"形式
+	bedTime: string; // "HH:MM"形式
+	achievements: string[]; // achievement IDの配列
+	mood: MoodMetrics;
 };
 
 export type CalenderEventMap = Map<`${number}:${number}`, CalenderEvent>;
