@@ -1,13 +1,15 @@
 import { isSameDate } from "@/utils/date";
 
 export type CalenderEvent = {
+	id: string;
+	// ここはISO8601でいいかな
 	year: number;
 	month: number;
 	date: number;
 	content: CalenderEventContent;
 };
 
-export type CalenderEventMap = Map<`${number}:${number}`, CalenderEventContent>;
+export type CalenderEventMap = Map<`${number}:${number}`, CalenderEvent>;
 
 // パターンを考える
 export type CalenderEventContent = {
@@ -19,7 +21,6 @@ export type GridDay = {
 	month: number;
 	date: number;
 	dateObj: Date;
-	event: CalenderEventContent | null;
 	dateString: string;
 };
 
@@ -46,13 +47,12 @@ const calcCalenderGridIndex = (event: CalenderEvent) => {
 };
 
 export const calcCalenderEventMap = (
-	calenderEventMap: CalenderEventMap,
 	events: CalenderEvent[],
 ): CalenderEventMap => {
+	const calenderEventMap: CalenderEventMap = new Map();
 	for (const event of events) {
-		calenderEventMap.set(calcCalenderGridIndex(event), event.content);
+		calenderEventMap.set(calcCalenderGridIndex(event), event);
 	}
-
 	return calenderEventMap;
 };
 
@@ -81,7 +81,6 @@ export const calcGrid = (
 				date: now.getDate(),
 				dateObj: new Date(now),
 				dateString: now.toLocaleString(),
-				event: null,
 			});
 
 			now.setDate(now.getDate() - 1);

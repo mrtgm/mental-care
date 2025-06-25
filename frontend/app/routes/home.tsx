@@ -15,8 +15,9 @@ import {
 	calcGrid,
 	type GridDay,
 } from "@/features/calender/domains/events/domain";
-import { LogEditor } from "@/features/log/components/editor";
-import { Log } from "@/features/log/components/log";
+import { EventDetial } from "@/features/event/components/detail";
+import { EventDetialEditor } from "@/features/event/components/editor";
+import { useStore } from "@/store";
 import type { Route } from "./+types/home";
 
 export function meta({}: Route.MetaArgs) {
@@ -27,19 +28,8 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-	const [calenderState, setCalenderState] = useState<{
-		calenderEvents: CalenderEvent[];
-		calenderEventMap: CalenderEventMap;
-		calenderGrid: CalenderGrid;
-		startDate: Date;
-	}>({
-		calenderEvents: [],
-		calenderEventMap: new Map(),
-		calenderGrid: [],
-		startDate: new Date(),
-	});
+	const calenderStore = useStore.useSlice.calender();
 
-	const [selectedDay, setSelectedDay] = useState<any>(null);
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
 	useEffect(() => {
@@ -47,9 +37,12 @@ export default function Home() {
 	}, []);
 
 	const handleDayClick = useCallback(
-		(day: GridDay, content: CalenderEventContent) => {
+		(day: GridDay, event: CalenderEvent | undefined) => {
 			if (day.dateObj > new Date()) return; // 未来の日付はクリック不可
-			setSelectedDay({ ...day, content });
+			calenderStore.setSelectedGridDay({
+				day,
+				event,
+			});
 			setIsDrawerOpen(true);
 		},
 		[],
@@ -57,23 +50,19 @@ export default function Home() {
 
 	const handleLoadEvents = useCallback(async () => {
 		const { calenderGrid: newCalenderGrid, startDate: updatedStartDate } =
-			calcGrid(calenderState.startDate, WEEK_COUNT_TO_LOAD);
+			calcGrid(calenderStore.startDate, WEEK_COUNT_TO_LOAD);
 
-		// Event の fetch (range) してステート更新が必要
-		// loding 中なら無視とか
+		const calenderEventMap = calcCalenderEventMap(sampleEvents); // ここは実際には API から取得する
 
-		const updatedCalenderEventMap = calcCalenderEventMap(
-			calenderState.calenderEventMap,
-			calenderState.calenderEvents,
-		);
+		calenderStore.setEvents(sampleEvents); // ここは実際には API から取得する
+		calenderStore.setEventMap(calenderEventMap);
+		calenderStore.setCalenderGrid([
+			...calenderStore.calenderGrid,
+			...newCalenderGrid,
+		]);
 
-		setCalenderState(({ calenderGrid }) => ({
-			calenderEvents: sampleEvents, // ここは実際には API から取得する
-			calenderEventMap: updatedCalenderEventMap,
-			calenderGrid: [...calenderGrid, ...newCalenderGrid],
-			startDate: updatedStartDate,
-		}));
-	}, [calenderState]);
+		calenderStore.setStartDate(updatedStartDate);
+	}, [calenderStore]);
 
 	return (
 		<div className="w-full max-w-7xl mx-auto px-6 py-8 bg-white min-h-screen">
@@ -83,7 +72,6 @@ export default function Home() {
 				<div className="absolute left-0 top-0 bottom-0 w-32 h-72 bg-gradient-to-r from-white to-transparent pointer-events-none z-10" />
 
 				<Calender
-					calenderState={calenderState}
 					onLoadMoreEvents={handleLoadEvents}
 					onDayClick={handleDayClick}
 				/>
@@ -91,10 +79,9 @@ export default function Home() {
 				<CalenderFooter />
 			</div>
 
-			<Log />
+			<EventDetial />
 
-			<LogEditor
-				selectedDay={selectedDay}
+			<EventDetialEditor
 				isDrawerOpen={isDrawerOpen}
 				setIsDrawerOpen={setIsDrawerOpen}
 			/>

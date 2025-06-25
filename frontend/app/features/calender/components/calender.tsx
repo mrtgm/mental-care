@@ -1,33 +1,25 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/shadcn/tooltip";
+import { useStore } from "@/store";
 import { getMonthName } from "@/utils/date";
 import { WEEK_OFFSET_TO_LOAD } from "../domains/events/constants";
-import type {
-	CalenderEventContent,
-	CalenderEventMap,
-	CalenderGrid,
-	GridDay,
-} from "../domains/events/domain";
+import type { CalenderEvent, GridDay } from "../domains/events/domain";
 
 export const Calender = ({
-	calenderState,
 	onDayClick,
 	onLoadMoreEvents,
 }: {
-	calenderState: {
-		calenderGrid: CalenderGrid;
-		calenderEventMap: CalenderEventMap;
-	};
 	onLoadMoreEvents: () => Promise<void>;
-	onDayClick: (day: GridDay, content: CalenderEventContent) => void;
+	onDayClick: (day: GridDay, content: CalenderEvent | undefined) => void;
 }) => {
 	const observerRef = useRef<IntersectionObserver | null>(null);
+	const calenderStore = useStore.useSlice.calender();
 
 	const observerDomRef = useCallback(
 		(node: HTMLElement | null) => {
@@ -52,7 +44,7 @@ export const Calender = ({
 			if (!node) return;
 			observerRef.current.observe(node);
 		},
-		[calenderState],
+		[calenderStore],
 	);
 
 	return (
@@ -61,7 +53,7 @@ export const Calender = ({
 						relative gap-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
 		>
 			<AnimatePresence>
-				{calenderState.calenderGrid.map((week, rowIndex, self) => {
+				{calenderStore.calenderGrid.map((week, rowIndex, self) => {
 					const totalLength = self.length;
 					return (
 						<CalanderWeek
@@ -71,7 +63,6 @@ export const Calender = ({
 							totalLength={totalLength}
 							onDayClick={onDayClick}
 							observerDomRef={observerDomRef}
-							calenderState={calenderState}
 						/>
 					);
 				})}
@@ -86,16 +77,12 @@ const CalanderWeek = ({
 	totalLength,
 	onDayClick,
 	observerDomRef,
-	calenderState,
 }: {
 	week: GridDay[];
 	rowIndex: number;
 	totalLength: number;
-	onDayClick: (day: GridDay, content: CalenderEventContent) => void;
+	onDayClick: (day: GridDay, content: CalenderEvent | undefined) => void;
 	observerDomRef: (node: HTMLElement | null) => void;
-	calenderState: {
-		calenderEventMap: CalenderEventMap;
-	};
 }) => {
 	const isFirstWeekOfMonth = week.some((v) => v.date === 1);
 	const isFirstWeekOfYear =
@@ -136,7 +123,6 @@ const CalanderWeek = ({
 							day={day}
 							rowIndex={rowIndex}
 							columnIndex={columnIndex}
-							calenderState={calenderState}
 							onDayClick={onDayClick}
 						/>
 					))}
@@ -150,22 +136,20 @@ const CalenderDate = ({
 	day,
 	rowIndex,
 	columnIndex,
-	calenderState,
+
 	onDayClick,
 }: {
 	day: GridDay;
 	rowIndex: number;
 	columnIndex: number;
-	calenderState: {
-		calenderEventMap: CalenderEventMap;
-	};
-	onDayClick: (day: GridDay, content: CalenderEventContent) => void;
-}) => {
-	const content = calenderState.calenderEventMap.get(
-		`${rowIndex}:${columnIndex}`,
-	);
 
-	const hasContent = Boolean(content?.message);
+	onDayClick: (day: GridDay, content: CalenderEvent | undefined) => void;
+}) => {
+	const calenderState = useStore.useSlice.calender();
+
+	const event = calenderState.eventMap.get(`${rowIndex}:${columnIndex}`);
+
+	const hasEvent = Boolean(event);
 	const isFutureDate = day.dateObj > new Date();
 	const isCurrentDate =
 		day.dateObj.toDateString() === new Date().toDateString();
@@ -182,19 +166,19 @@ const CalenderDate = ({
 								? "bg-green-200 border-green-300 shadow-sm cursor-pointer"
 								: isFutureDate
 									? "bg-gray-50 border-white cursor-not-allowed"
-									: hasContent
+									: hasEvent
 										? "bg-orange-500 border-orange-600 hover:bg-orange-600 shadow-sm cursor-pointer"
 										: "bg-gray-100 border-gray-200 hover:bg-gray-200 hover:border-gray-300 cursor-pointer"
 						}
           `}
 					style={{ order: 7 - columnIndex }}
-					onClick={() => content && onDayClick(day, content)} // TODO:なんかする
+					onClick={() => onDayClick(day, event)}
 				></div>
 			</TooltipTrigger>
 			<TooltipContent side="top" className="bg-black text-white border-black">
 				<p className="text-xs">
 					{day.year}/{day.month}/{day.date}
-					{hasContent ? ` - ${content?.message}` : ""}
+					{hasEvent ? ` - ${event?.content.message}` : ""}
 				</p>
 			</TooltipContent>
 		</Tooltip>
