@@ -16,6 +16,8 @@ services:
     container_name: caddy-local
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
+      - ../ansible/vps/secrets/localhost+2.pem:/etc/ssl/certs/localhost+2.pem:ro
+      - ../ansible/vps/secrets/localhost+2-key.pem:/etc/ssl/certs/localhost+2-key.pem:ro
     env_file: [ ../.env.local ]
     ports:
       - "80:80"

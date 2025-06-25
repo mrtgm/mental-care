@@ -4,6 +4,7 @@ import type {
 	CalenderEvent,
 	CalenderEventMap,
 	CalenderGrid,
+	CalenderWeekEvent,
 	GridDay,
 } from "../domains/events/domain";
 
@@ -25,6 +26,9 @@ export interface CalenderSlice {
 	addEvent: (event: CalenderEvent) => void;
 	removeEvent: (eventId: string) => void;
 	updateEvent: (event: CalenderEvent) => void;
+
+	weekEvents: CalenderWeekEvent[];
+	setWeekEvents: (weekEvents: CalenderWeekEvent[]) => void;
 
 	eventMap: CalenderEventMap;
 	setEventMap: (eventMap: CalenderEventMap) => void;
@@ -62,6 +66,9 @@ export const createCalenderSlice: StateCreator<
 				e.id === event.id ? { ...e, ...event } : e,
 			),
 		})),
+
+	weekEvents: [],
+	setWeekEvents: (weekEvents) => set({ weekEvents }),
 
 	eventMap: new Map(),
 	setEventMap: (eventMap) => set({ eventMap }),

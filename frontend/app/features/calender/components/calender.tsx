@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
 	Tooltip,
 	TooltipContent,
@@ -9,15 +9,22 @@ import {
 import { useStore } from "@/store";
 import { getMonthName } from "@/utils/date";
 import { WEEK_OFFSET_TO_LOAD } from "../domains/events/constants";
-import type { CalenderEvent, GridDay } from "../domains/events/domain";
+import {
+	type CalenderEvent,
+	type GridDay,
+	generateWeekId,
+	getCalendarDateStyles,
+} from "../domains/events/domain";
 import { CalendarTooltip } from "./tooltip";
 
 export const Calender = ({
 	onDayClick,
+	onWeekClick,
 	onLoadMoreEvents,
 }: {
 	onLoadMoreEvents: () => Promise<void>;
 	onDayClick: (day: GridDay, content: CalenderEvent | undefined) => void;
+	onWeekClick: (week: GridDay[]) => void;
 }) => {
 	const observerRef = useRef<IntersectionObserver | null>(null);
 	const calenderStore = useStore.useSlice.calender();
@@ -63,6 +70,7 @@ export const Calender = ({
 							rowIndex={rowIndex}
 							totalLength={totalLength}
 							onDayClick={onDayClick}
+							onWeekClick={onWeekClick}
 							observerDomRef={observerDomRef}
 						/>
 					);
@@ -77,14 +85,22 @@ const CalanderWeek = ({
 	rowIndex,
 	totalLength,
 	onDayClick,
+	onWeekClick,
 	observerDomRef,
 }: {
 	week: GridDay[];
 	rowIndex: number;
 	totalLength: number;
 	onDayClick: (day: GridDay, content: CalenderEvent | undefined) => void;
+	onWeekClick: (week: GridDay[]) => void;
 	observerDomRef: (node: HTMLElement | null) => void;
 }) => {
+	const weekEvent = useStore.useSlice
+		.calender()
+		.weekEvents.find(
+			(v) => v.id === generateWeekId(week[6].dateObj, week[0].dateObj),
+		);
+
 	const isFirstWeekOfMonth = week.some((v) => v.date === 1);
 	const isFirstWeekOfYear =
 		isFirstWeekOfMonth &&
@@ -92,6 +108,8 @@ const CalanderWeek = ({
 		!week.some((v) => v.month === 2);
 
 	const isObserved = rowIndex + 1 === totalLength - WEEK_OFFSET_TO_LOAD;
+	const hasWeekEvent = !!weekEvent;
+	const [isHoverOnHeader, setIsHoverOnHeader] = useState(false);
 
 	return (
 		<motion.div
@@ -103,11 +121,29 @@ const CalanderWeek = ({
 			className="flex-shrink-0 w-6 h-full flex flex-col"
 			{...(isObserved && { ref: observerDomRef })}
 		>
-			<div className="h-[40px] flex items-center justify-center mb-3">
+			<div
+				className="h-[40px] flex items-center justify-center mb-3 cursor-pointer"
+				onMouseEnter={() => setIsHoverOnHeader(true)}
+				onMouseLeave={() => setIsHoverOnHeader(false)}
+				onClick={() => onWeekClick(week)}
+			>
 				{isFirstWeekOfYear && (
 					<span className="absolute top-0 text-sm text-orange-600">
 						{week.at(0)?.year ?? 0}
 					</span>
+				)}
+				{hasWeekEvent ? (
+					<span className="rounded-lg  border-orange-400 w-[26px] h-[26px] absolute top-[21px] bg-orange-100 hover:bg-orange-200 transition-all duration-300" />
+				) : (
+					<AnimatePresence>
+						{isHoverOnHeader && (
+							<motion.span
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								className="rounded-lg border border-orange-400 w-[26px] h-[26px] absolute top-[21px] bg-gradient-to-b from-orange-100 to-orange-200"
+							></motion.span>
+						)}
+					</AnimatePresence>
 				)}
 				{isFirstWeekOfMonth && (
 					<span className="absolute top-[26px] text-xs text-orange-600">
@@ -154,24 +190,15 @@ const CalenderDate = ({
 	const isCurrentDate =
 		day.dateObj.toDateString() === new Date().toDateString();
 
+	const className = getCalendarDateStyles(event, isCurrentDate, isFutureDate);
+
 	return (
 		<Tooltip key={day.dateString}>
 			<TooltipTrigger asChild>
 				<div
-					className={`
-            w-6 h-6 rounded-md border-1 transition-all duration-300
-            hover:scale-110 hover:shadow-md
-            ${
-							isCurrentDate
-								? "bg-green-200 border-green-300 shadow-sm cursor-pointer"
-								: isFutureDate
-									? "bg-gray-50 border-white cursor-not-allowed"
-									: event
-										? "bg-orange-500 border-orange-600 hover:bg-orange-600 shadow-sm cursor-pointer"
-										: "bg-gray-100 border-gray-200 hover:bg-gray-200 hover:border-gray-300 cursor-pointer"
-						}
-          `}
-					style={{ order: 7 - columnIndex }}
+					className={className.className}
+					data-score={className.moodScore}
+					style={{ order: 7 - columnIndex, ...className.style }}
 					onClick={() => onDayClick(day, event)}
 				></div>
 			</TooltipTrigger>

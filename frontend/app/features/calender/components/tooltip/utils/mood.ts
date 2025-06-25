@@ -1,4 +1,4 @@
-import type { MoodMetrics } from "../../../domains/events/domain";
+import type { SummaryMoodMetrics } from "../../../domains/events/domain";
 
 export const getMoodEmoji = (panasScore: number): string => {
 	if (panasScore > 1.5) return "😊";
@@ -27,6 +27,9 @@ export const getVasTextColor = (vasScore: number): string => {
 	return "text-red-400";
 };
 
-export const calculatePanasScore = (mood: MoodMetrics): number => {
+export const getVasImageUrl = (vasScore: number): string =>
+	`/faces/${Math.min(((20 - vasScore / 5) | 0) + 1, 20)}.webp`;
+
+export const calculatePanasScore = (mood: SummaryMoodMetrics): number => {
 	return mood.panasSf.positive - mood.panasSf.negative;
 };

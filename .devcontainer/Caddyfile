@@ -1,10 +1,5 @@
 localhost {
-    tls {
-        issuer internal {
-            lifetime 30d
-            sign_with_root
-        }
-    }
+    tls /etc/ssl/certs/localhost+2.pem /etc/ssl/certs/localhost+2-key.pem
 
     reverse_proxy /api/* devcontainer:{$BACKEND_PORT}
     reverse_proxy devcontainer:{$FRONTEND_PORT}

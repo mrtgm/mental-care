@@ -1,18 +1,17 @@
 import { FieldLabelMap } from "../../domains/events/constants";
-import type { MoodMetrics } from "../../domains/events/domain";
+import type { SummaryMoodMetrics } from "../../domains/events/domain";
 import {
 	calculatePanasScore,
 	getMoodColor,
 	getMoodEmoji,
 	getVasColor,
+	getVasImageUrl,
 	getVasTextColor,
 } from "./utils/mood";
 
-interface MoodDisplayProps {
-	mood: MoodMetrics;
-}
 
-export const MoodDisplay = ({ mood }: MoodDisplayProps) => {
+
+export const MoodDisplay = ({ mood }: {mood: SummaryMoodMetrics;}) => {
 	const panasScore = calculatePanasScore(mood);
 
 	return (
@@ -46,6 +45,10 @@ export const MoodDisplay = ({ mood }: MoodDisplayProps) => {
 							{panasScore.toFixed(1)}
 						</span>
 					</div>
+				</div>
+
+				<div className="mt-2 w-full">
+					<img src={getVasImageUrl(mood.vas)} className="w-1/3" />
 				</div>
 			</div>
 		</div>

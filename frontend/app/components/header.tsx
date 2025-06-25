@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { Button } from "./shadcn/button";
 
 export const Header = () => {
@@ -7,10 +8,10 @@ export const Header = () => {
 
 			<div className="flex items-center gap-2">
 				<div className="rounded-lg bg-white flex items-center justify-center text-gray-500 transition-colors border border-gray-200 p-2 px-4 gap-4">
-					<span>📝</span>
-					<span>🛌</span>
-					<span>🎵</span>
-					<span>✨️</span>
+					<Link to="/">📝</Link>
+					<Link to="/sleeping-time">🛌</Link>
+					<Link to="/mood">🎵</Link>
+					<Link to="/achievements">✨️</Link>
 				</div>
 
 				<Button
