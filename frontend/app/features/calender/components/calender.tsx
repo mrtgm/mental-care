@@ -52,7 +52,7 @@ export const Calender = ({
 			if (!node) return;
 			observerRef.current.observe(node);
 		},
-		[calenderStore],
+		[onLoadMoreEvents],
 	);
 
 	return (
@@ -65,7 +65,7 @@ export const Calender = ({
 					const totalLength = self.length;
 					return (
 						<CalanderWeek
-							key={rowIndex}
+							key={`${week[0].date}`}
 							week={week}
 							rowIndex={rowIndex}
 							totalLength={totalLength}
@@ -121,7 +121,8 @@ const CalanderWeek = ({
 			className="flex-shrink-0 w-6 h-full flex flex-col"
 			{...(isObserved && { ref: observerDomRef })}
 		>
-			<div
+			<button
+				type="button"
 				className="h-[40px] flex items-center justify-center mb-3 cursor-pointer"
 				onMouseEnter={() => setIsHoverOnHeader(true)}
 				onMouseLeave={() => setIsHoverOnHeader(false)}
@@ -150,7 +151,7 @@ const CalanderWeek = ({
 						{getMonthName(week.at(0)?.month)}
 					</span>
 				)}
-			</div>
+			</button>
 
 			<div className="flex-1 flex flex-col gap-1.5">
 				<TooltipProvider>
@@ -195,12 +196,13 @@ const CalenderDate = ({
 	return (
 		<Tooltip key={day.dateString}>
 			<TooltipTrigger asChild>
-				<div
+				<button
+					type="button"
 					className={className.className}
 					data-score={className.moodScore}
 					style={{ order: 7 - columnIndex, ...className.style }}
 					onClick={() => onDayClick(day, event)}
-				></div>
+				/>
 			</TooltipTrigger>
 			<TooltipContent side="top" className="bg-black text-white border-black">
 				<CalendarTooltip day={day} event={event} />

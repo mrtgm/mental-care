@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Outlet, useNavigate } from "react-router";
 import { Header } from "@/components/header";
 import { sampleEvents } from "@/data/dummy-events";
@@ -20,12 +20,24 @@ import { useStore } from "@/store";
 export default function Layout() {
 	const navigate = useNavigate();
 
+	const isInitialized = useRef(false);
 	const calenderStore = useStore.useSlice.calender();
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-	useEffect(() => {
-		handleLoadEvents();
-	}, []);
+	const handleLoadEvents = useCallback(async () => {
+		const { calenderGrid: newCalenderGrid, startDate: updatedStartDate } =
+			calcGrid(calenderStore.startDate, WEEK_COUNT_TO_LOAD);
+		const calenderEventMap = calcCalenderEventMap(sampleEvents);
+
+		calenderStore.setEvents(sampleEvents);
+		calenderStore.setWeekEvents(sampleWeekEvents);
+		calenderStore.setEventMap(calenderEventMap);
+		calenderStore.setCalenderGrid([
+			...calenderStore.calenderGrid,
+			...newCalenderGrid,
+		]);
+		calenderStore.setStartDate(updatedStartDate);
+	}, [calenderStore]);
 
 	const handleDayClick = useCallback(
 		(day: GridDay, event: CalenderEvent | undefined) => {
@@ -46,24 +58,19 @@ export default function Layout() {
 		[navigate, calenderStore],
 	);
 
-	const handleWeekClick = useCallback((week: GridDay[]) => {
-		navigate(`/weeks/${generateWeekId(week[6].dateObj, week[0].dateObj)}`);
-	}, []);
+	const handleWeekClick = useCallback(
+		(week: GridDay[]) => {
+			navigate(`/weeks/${generateWeekId(week[6].dateObj, week[0].dateObj)}`);
+		},
+		[navigate],
+	);
 
-	const handleLoadEvents = useCallback(async () => {
-		const { calenderGrid: newCalenderGrid, startDate: updatedStartDate } =
-			calcGrid(calenderStore.startDate, WEEK_COUNT_TO_LOAD);
-		const calenderEventMap = calcCalenderEventMap(sampleEvents);
-
-		calenderStore.setEvents(sampleEvents);
-		calenderStore.setWeekEvents(sampleWeekEvents);
-		calenderStore.setEventMap(calenderEventMap);
-		calenderStore.setCalenderGrid([
-			...calenderStore.calenderGrid,
-			...newCalenderGrid,
-		]);
-		calenderStore.setStartDate(updatedStartDate);
-	}, [calenderStore]);
+	useEffect(() => {
+		if (!isInitialized.current) {
+			handleLoadEvents();
+			isInitialized.current = true;
+		}
+	}, [handleLoadEvents]);
 
 	return (
 		<div className="w-full max-w-7xl mx-auto px-6 py-8 bg-white min-h-screen sm:max-w-full">

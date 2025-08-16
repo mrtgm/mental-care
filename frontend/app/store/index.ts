@@ -1,92 +1,67 @@
 import { enableMapSet } from "immer";
-import { StaticRouter } from "react-router";
-import {
-	create,
-	type StateCreator,
-	type StoreApi,
-	type UseBoundStore,
-} from "zustand";
+import { create, type StoreApi, type UseBoundStore } from "zustand";
 import { devtools, subscribeWithSelector } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
-import { useShallow } from "zustand/react/shallow";
-import {
-	type CalenderSlice,
-	createCalenderSlice,
-} from "@/features/calender/store/calender";
+import { type CalenderSlice, createCalenderSlice } from "@/features/calender/store/calender";
 
 const sliceDefinitions = {
-	calender: createCalenderSlice,
+  calender: createCalenderSlice,
 };
 
 export type AppState = CalenderSlice;
 
 type StoreWithSliceSelectors<S> = S & {
-	useSlice: {
-		[K in keyof typeof sliceDefinitions]: () => ReturnType<
-			(typeof sliceDefinitions)[K]
-		>;
-	};
+  useSlice: {
+    [K in keyof typeof sliceDefinitions]: () => ReturnType<(typeof sliceDefinitions)[K]>;
+  };
 } & StoreApi<AppState>;
 
-const createSelector = <S extends UseBoundStore<StoreApi<object>>>(
-	_store: S,
-) => {
-	enableMapSet();
+const createSelector = <S extends UseBoundStore<StoreApi<object>>>(_store: S) => {
+  enableMapSet();
 
-	const store = _store as StoreWithSliceSelectors<typeof _store>;
-	store.useSlice = {} as StoreWithSliceSelectors<typeof _store>["useSlice"];
+  const store = _store as StoreWithSliceSelectors<typeof _store>;
+  store.useSlice = {} as StoreWithSliceSelectors<typeof _store>["useSlice"];
 
-	const sliceKeysCache = new Map<string, string[]>();
+  const sliceKeysCache = new Map<string, string[]>();
 
-	// 初期化時に一度だけそのスライスのキーを抽出してキャッシュ
-	for (const [sliceName, sliceCreator] of Object.entries(sliceDefinitions)) {
-		const sliceResult = sliceCreator(
-			() => {},
-			() => (() => {}) as any,
-			{} as any,
-		);
-		const keys = Object.keys(sliceResult);
-		sliceKeysCache.set(sliceName, keys);
-	}
+  // 初期化時に一度だけそのスライスのキーを抽出してキャッシュ
+  for (const [sliceName, sliceCreator] of Object.entries(sliceDefinitions)) {
+    const sliceResult = sliceCreator(
+      () => {},
+      () => (() => {}) as any,
+      {} as any
+    );
+    const keys = Object.keys(sliceResult);
+    sliceKeysCache.set(sliceName, keys);
+  }
 
-	console.log("ok?");
+  // 抽出したキーを下にストアを分割、selector を作成
+  for (const sliceName of Object.keys(sliceDefinitions)) {
+    const sliceKeys = sliceKeysCache.get(sliceName) || [];
 
-	// 抽出したキーを下にストアを分割、selector を作成
-	for (const sliceName of Object.keys(sliceDefinitions)) {
-		const sliceKeys = sliceKeysCache.get(sliceName) || [];
+    (store.useSlice as any)[sliceName] = () =>
+      Object.assign(
+        {},
+        ...sliceKeys.map((key) => ({
+          [key]: store((state) => {
+            return (state as any)[key];
+          }),
+        }))
+      );
+  }
 
-		(store.useSlice as any)[sliceName] = () =>
-			Object.assign(
-				{},
-				...sliceKeys.map((key) => ({
-					[key]: store((state) => {
-						return (state as any)[key];
-					}),
-				})),
-			);
-	}
-
-	return store;
+  return store;
 };
 
 export const useStore = createSelector(
-	create<
-		AppState,
-		[
-			["zustand/devtools", never],
-			["zustand/subscribeWithSelector", never],
-			["zustand/immer", never],
-		]
-	>(
-		devtools(
-			subscribeWithSelector(
-				immer((set, get, store) => {
-					const slices = Object.entries(sliceDefinitions).map(
-						([_, createSlice]) => createSlice(set, get, store),
-					);
-					return Object.assign({}, ...slices);
-				}),
-			),
-		),
-	),
+  create<AppState, [["zustand/devtools", never], ["zustand/subscribeWithSelector", never], ["zustand/immer", never]]>(
+    devtools(
+      subscribeWithSelector(
+        immer((set, get, store) => {
+          const slices = Object.entries(sliceDefinitions).map(([_, createSlice]) => createSlice(set, get, store));
+          return Object.assign({}, ...slices);
+        })
+      )
+    )
+  )
 );

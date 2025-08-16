@@ -1,6 +1,8 @@
 killport *port:
     lsof -i :{{port}} | awk 'NR!=1 {print $2}' | xargs kill
 
+setup:
+
 # イメージビルド
 image-build:
     ./bin/image-build.sh
@@ -21,7 +23,7 @@ kill-all:
     docker rm $(docker ps -aq)
 
 clean:
-    docker compose -p mental-care_devcontainer down
+    -docker compose -p mental-care_devcontainer down
     docker volume prune -f
     docker image prune -f
 

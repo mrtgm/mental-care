@@ -4,7 +4,7 @@ FROM mcr.microsoft.com/devcontainers/go:latest
 ARG username=dev
 
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends postgresql-client git curl unzip redis-tools zsh tmux
+    && apt-get -y install --no-install-recommends postgresql-client git curl unzip redis-tools zsh tmux  xclip x11-apps
 RUN sudo useradd --create-home --shell /bin/bash ${username}
 RUN sudo usermod -aG sudo ${username}
 RUN echo "${username} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/${username}
@@ -50,7 +50,9 @@ RUN mkdir -p /home/${username}/.zshrc.d \
     && echo 'zinit light zsh-users/zsh-autosuggestions' >> /home/${username}/.zshrc.d/zinit.zsh \
     && echo 'zinit light zsh-users/zsh-completions' >> /home/${username}/.zshrc.d/zinit.zsh \
     && echo 'source ~/.zshrc.d/zinit.zsh' >> /home/${username}/.zshrc \
-    && chown -R ${username}:${username} /home/${username}/.zshrc.d
+    && chown -R ${username}:${username} /home/${username}/.zshrc.d \
+    && chown -R ${username}:${username} /home/${username}/.zinit \
+    && chown ${username}:${username} /home/${username}/.zshrc
 
 # install direnv
 RUN curl -sfL https://direnv.net/install.sh | bash
@@ -77,3 +79,5 @@ RUN bun install --global @biomejs/biome
 RUN bun --version && go version
 
 RUN chown -R ${username}:${username} /home/${username}/go
+
+RUN echo "alias copy='xclip -selection clipboard'" >> /home/${username}/.zshrc
