@@ -23,7 +23,6 @@ export const MoodDisplay = ({ mood }: { mood: SummaryMoodMetrics }) => {
         <div className="flex items-center gap-2">
           <span className="text-gray-300">PANAS:</span>
           <div className="flex items-center gap-1">
-            <span>{getMoodEmoji(panasScore)}</span>
             <span className={`font-medium ${getMoodColor(panasScore)}`}>
               {panasScore > 0 ? "+" : ""}
               {panasScore.toFixed(1)}
@@ -31,9 +30,9 @@ export const MoodDisplay = ({ mood }: { mood: SummaryMoodMetrics }) => {
           </div>
         </div>
 
-        <div className="mt-2 w-full">
+        {/* <div className="mt-2 w-full">
           <img src={getVasImageUrl(mood.vas)} className="w-1/3" alt="VAS" />
-        </div>
+        </div> */}
       </div>
     </div>
   );

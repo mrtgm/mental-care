@@ -7,13 +7,13 @@ export const SleepTimeDisplay = ({ wakeUpTime, bedTime }: { wakeUpTime: string; 
       <div className="flex items-center gap-2">
         <span className="text-white">Wake:</span>
         <span>{wakeUpTime}</span>
-        <span>{getWakeUpIcon(wakeUpTime)}</span>
+        {/* <span>{getWakeUpIcon(wakeUpTime)}</span> */}
       </div>
 
       <div className="flex items-center gap-2">
         <span className="text-white">Sleep:</span>
         <span>{bedTime}</span>
-        <span>{getBedTimeIcon(bedTime)}</span>
+        {/* <span>{getBedTimeIcon(bedTime)}</span> */}
       </div>
     </div>
   );

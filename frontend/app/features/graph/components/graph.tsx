@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CalenderEvent } from "@/features/calender/domains/events/domain";
 import { type UseResizeCallbackArgs, useResize } from "@/hooks/use-resize";
-import { convertMsToTime, convertTimeToMs, getMsFromMonthEnd, getMsOfMonth } from "@/utils/date";
+import { convertMsToTime, convertTimeToMs, getMonthName, getMsFromMonthEnd, getMsOfMonth } from "@/utils/date";
 import { floorToPrecision } from "@/utils/math";
 import { PLOT_AREA } from "../constants";
 import { type AxisConfig, mapDateToXAxis, mapMsToYAxis } from "../domain";
+import { GraphFooter } from "./graph-footer";
 import { XPane } from "./x-pane";
 import { YPane } from "./y-pane";
 
@@ -32,7 +33,7 @@ const xAxisConfig: AxisConfig<number> = {
     return date.getTime();
   },
   getCoordByValue: (value) => mapDateToXAxis(value, xAxisConfig),
-  getLabel: (value) => `${new Date(value).getMonth() + 1}月`,
+  getLabel: (value) => getMonthName(new Date(value)),
 };
 
 const logicalTotalWidth = {
@@ -65,6 +66,9 @@ export const Graph = ({ events }: { events: CalenderEvent[] }) => {
 
       <div className="absolute top-0 left-0 w-full pointer-events-none" ref={yPaneRef}>
         <YPane yAxisConfig={yAxisConfig} />
+      </div>
+      <div className="px-6">
+        <GraphFooter />
       </div>
     </div>
   );

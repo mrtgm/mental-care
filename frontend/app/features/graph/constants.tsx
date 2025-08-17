@@ -16,4 +16,4 @@ export const PLOT_AREA = {
 };
 
 // 描画エリアの最大物理サイズ
-export const MAX_HEIGHT = 500;
+export const MAX_HEIGHT = 400;

@@ -51,7 +51,7 @@ const Grid = ({ xAxisGap, yAxisGap, logicalTotalWidth }: { xAxisGap: number; yAx
     <>
       <defs>
         <pattern id={id} width={xAxisGap} height={yAxisGap} patternUnits="userSpaceOnUse" patternTransform={`translate(${PLOT_AREA.marginLeft}, ${PLOT_AREA.marginTop})`}>
-          <path d={`M ${xAxisGap} 0 L 0 0 0 ${yAxisGap}`} fill="none" stroke="#e9ecef" strokeWidth="1" stroke-dasharray="4 1" />
+          <path d={`M ${xAxisGap} 0 L 0 0 0 ${yAxisGap}`} fill="none" stroke="#3f485a" strokeWidth="2" strokeDasharray="2 2" />
         </pattern>
       </defs>
       <rect x={PLOT_AREA.marginLeft} y={PLOT_AREA.marginTop} width={logicalTotalWidth.value - PLOT_AREA.marginLeft} height={PLOT_AREA.height} fill={`url(#${id})`} />
@@ -75,13 +75,13 @@ const XAxisTicks = ({ xAxisConfig, logicalTotalWidth }: { xAxisConfig: AxisConfi
 
   return (
     <g transform={`translate(${PLOT_AREA.marginLeft}, ${PLOT_AREA.marginTop})`}>
-      <line x1="0" y1={PLOT_AREA.height} x2={logicalTotalWidth.value - PLOT_AREA.marginLeft} y2={PLOT_AREA.height} stroke="#333" strokeWidth="1" />
+      <line x1="0" y1={PLOT_AREA.height + 0.5} x2={logicalTotalWidth.value - PLOT_AREA.marginLeft} y2={PLOT_AREA.height + 0.5} stroke="#fff" strokeWidth="1" />
 
       {xAxisTicks.map((v) => {
         return (
           <g key={v.value} transform={`translate(${v.x}, ${v.y})`}>
-            <line x1="0" y1="-5" x2="0" y2="5" stroke="#333" strokeWidth="1" />
-            <text x="0" y="15" fontFamily="Arial" fontSize="8" fill="#666" textAnchor="middle">
+            <line x1="0.5" y1="-5" x2="0.5" y2="5" stroke="#fff" strokeWidth="1" />
+            <text x="0" y="15" fontSize="8" fill="#fff" textAnchor="middle">
               {v.label}
             </text>
           </g>
@@ -129,11 +129,11 @@ const DataPoints = ({ data, stroke }: { data: Point[]; stroke: string }) => {
 
   return (
     <g transform={`translate(${PLOT_AREA.marginLeft}, ${PLOT_AREA.marginTop})`}>
-      {data.map((point) => (
-        <circle key={`${point.x}_${point.y}`} cx={point.x} cy={point.y} r="4" fill={stroke} stroke="#fff" strokeWidth="2" style={{ pointerEvents: "none" }} />
-      ))}
-
       <path d={generatePath(data)} fill="none" stroke={stroke} strokeWidth="1" strokeLinecap="round" />
+
+      {data.map((point) => (
+        <rect key={`${point.x}_${point.y}`} x={point.x - 4} y={point.y - 4} width="8" height="8" fill={stroke} style={{ pointerEvents: "none" }} />
+      ))}
     </g>
   );
 };

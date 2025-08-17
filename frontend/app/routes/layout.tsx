@@ -66,7 +66,7 @@ export default function Layout() {
     <div className="w-full max-w-7xl mx-auto px-6 py-8 min-h-screen sm:max-w-full">
       <Header />
       <div className="rounded-2xl border-gray-200 p-6 relative mb-8 sm:px-0">
-        <div className="absolute left-0 top-0 bottom-0 w-32 h-72 bg-gradient-to-r from-white to-transparent pointer-events-none z-10" />
+        <div className="absolute left-0 top-0 bottom-0 w-32 h-72 bg-gradient-to-r from-[#06101a] to-transparent pointer-events-none z-10" />
         <Calender onLoadMoreEvents={handleLoadEvents} onDayClick={handleDayClick} onWeekClick={handleWeekClick} />
         <CalenderFooter />
       </div>

@@ -6,9 +6,9 @@ const AchievementItem = ({ achievement, type }: { achievement: Achievement; type
   const isPositive = type === "positive";
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1 text-[10px]">
       <span className={isPositive ? "text-green-300" : "text-red-300"}>{achievement.label}</span>
-      <span className={`text-xs ${isPositive ? "text-green-500" : "text-red-500"}`}>
+      <span className={`${isPositive ? "text-green-500" : "text-red-500"}`}>
         ({isPositive ? "+" : ""}
         {achievement.score})
       </span>
@@ -20,7 +20,6 @@ const AchievementTotal = ({ totalScore }: { totalScore: number }) => {
   return (
     <div className="border-t border-gray-600 pt-1 mt-1">
       <div className="flex items-center justify-between">
-        <span className="text-gray-300">Total Score:</span>
         <span className={`font-semibold ${getTotalScoreColor(totalScore)}`}>
           {totalScore > 0 ? "+" : ""}
           {totalScore}
