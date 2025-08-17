@@ -80,7 +80,7 @@ const XAxisTicks = ({ xAxisConfig, logicalTotalWidth }: { xAxisConfig: AxisConfi
       {xAxisTicks.map((v) => {
         return (
           <g key={v.value} transform={`translate(${v.x}, ${v.y})`}>
-            <line x1="0.5" y1="-5" x2="0.5" y2="5" stroke="#fff" strokeWidth="1" />
+            <line x1="0.5" y1="-3" x2="0.5" y2="3" stroke="#fff" strokeWidth="1" />
             <text x="0" y="15" fontSize="8" fill="#fff" textAnchor="middle">
               {v.label}
             </text>

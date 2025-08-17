@@ -34,7 +34,7 @@ export const YPane = ({ yAxisConfig }: { yAxisConfig: AxisConfig<number> }) => {
         {yAxisTicks.map((v) => {
           return (
             <g key={v.value} transform={`translate(0, ${v.y})`}>
-              <line x1="-5" y1="0.5" x2="5" y2="0.5" stroke="#fff" strokeWidth="1" />
+              <line x1="-3" y1="0.5" x2="3" y2="0.5" stroke="#fff" strokeWidth="1" />
               <text x="-8" y="3" fontSize="8" fill="#fff" textAnchor="end">
                 {yAxisConfig.getLabel(v.value)}
               </text>

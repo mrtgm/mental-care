@@ -59,16 +59,13 @@ export const Graph = ({ events }: { events: CalenderEvent[] }) => {
   useResize(handleResize);
 
   return (
-    <div className="w-dvw relative">
+    <div className="w-full relative">
       <div className="w-full overflow-x-scroll">
         <XPane events={events} xAxisConfig={xAxisConfig} yAxisConfig={yAxisConfig} actualTotalWidth={actualTotalWidth} logicalTotalWidth={logicalTotalWidth} />
       </div>
 
       <div className="absolute top-0 left-0 w-full pointer-events-none" ref={yPaneRef}>
         <YPane yAxisConfig={yAxisConfig} />
-      </div>
-      <div className="px-6">
-        <GraphFooter />
       </div>
     </div>
   );
