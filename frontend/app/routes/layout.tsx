@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Outlet, useNavigate } from "react-router";
+import { Outlet, useNavigate, useParams } from "react-router";
 import { Header } from "@/components/header";
 import { Calender } from "@/features/calender/components/calender";
 import { WEEK_COUNT_TO_LOAD } from "@/features/calender/domains/events/constants";
@@ -9,6 +9,8 @@ import { useStore } from "@/store";
 
 export default function Layout() {
   const navigate = useNavigate();
+
+  const selectedDate = useParams().dayId;
 
   const calenderStore = useStore.useSlice.calender();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -43,7 +45,16 @@ export default function Layout() {
       <Header />
       <div className="rounded-2xl border-gray-200 relative">
         <div className="absolute h-full left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[#06101a] to-transparent pointer-events-none z-10" />
-        <Calender weekCountToLoad={WEEK_COUNT_TO_LOAD} events={calenderStore.events} count={calenderStore.count} onLoadMoreEvents={handleLoadEvents} onDayClick={handleDayClick} onWeekClick={handleWeekClick} />
+        <Calender
+          events={calenderStore.events}
+          selectedDate={selectedDate}
+          weekEvents={calenderStore.weekEvents}
+          count={calenderStore.count}
+          weekCountToLoad={WEEK_COUNT_TO_LOAD}
+          onLoadMoreEvents={handleLoadEvents}
+          onDayClick={handleDayClick}
+          onWeekClick={handleWeekClick}
+        />
       </div>
 
       <Outlet />

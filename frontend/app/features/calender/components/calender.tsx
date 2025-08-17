@@ -1,15 +1,14 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useMemo, useRef, useState } from "react";
-import { useParams } from "react-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/shadcn/tooltip";
-import { useStore } from "@/store";
-import { getMonthName } from "@/utils/date";
-import { WEEK_COUNT_TO_LOAD, WEEK_OFFSET_TO_LOAD } from "../domains/events/constants";
-import { type CalenderEvent, calcCalenderEventMap, calcGrid, type GridDay, generateWeekId, getCalendarDateStyles, getMoodBasedColors } from "../domains/events/domain";
+import { formatDate, getMonthName } from "@/utils/date";
+import { type CalenderEvent, type CalenderWeekEvent, calcCalenderEventMap, calcGrid, type GridDay, generateWeekId, getCalendarDateStyles, getMoodBasedColors } from "../domains/events/domain";
 import { CalendarTooltip } from "./tooltip";
 
 export const Calender = ({
   events,
+  weekEvents,
+  selectedDate = formatDate(new Date()),
   count,
   weekCountToLoad,
   onDayClick,
@@ -17,6 +16,8 @@ export const Calender = ({
   onLoadMoreEvents,
 }: {
   events: CalenderEvent[];
+  weekEvents: CalenderWeekEvent[];
+  selectedDate?: string | undefined;
   count: number;
   weekCountToLoad: number;
   onLoadMoreEvents: () => Promise<void>;
@@ -59,21 +60,42 @@ export const Calender = ({
     [onLoadMoreEvents],
   );
 
+  const calenderRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (calenderRef.current) {
+      const targetDom = document.getElementById(selectedDate);
+
+      console.log("selectedDate", selectedDate);
+      console.log("targetDom", targetDom);
+
+      if (targetDom) {
+        const scrollLeft = targetDom.getBoundingClientRect().left - calenderRef.current.getBoundingClientRect().left;
+        console.log("scrollLeft", scrollLeft);
+        calenderRef.current.scrollLeft = scrollLeft;
+      }
+    }
+  }, [selectedDate]);
+
   return (
-    <div className="mt-2 w-full overflow-x-scroll overflow-y-visible flex flex-row-reverse relative gap-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+    <div ref={calenderRef} className="mt-2 w-full overflow-x-scroll overflow-y-visible flex flex-row-reverse relative gap-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
       <AnimatePresence>
         {calenderGrid.map((week, rowIndex, self) => {
           const totalLength = self.length;
+          const weekEvent = weekEvents.find((v) => v.id === generateWeekId(week[6].dateObj, week[0].dateObj));
+
           return (
             <CalanderWeek
               key={`${week[0].dateString}`}
               week={week}
+              weekEvent={weekEvent}
               rowIndex={rowIndex}
               totalLength={totalLength}
               onDayClick={onDayClick}
               onWeekClick={onWeekClick}
               observerDomRef={observerDomRef}
               calenderEventMap={calenderEventMap}
+              selectedDate={selectedDate}
             />
           );
         })}
@@ -84,27 +106,29 @@ export const Calender = ({
 
 const CalanderWeek = ({
   week,
+  weekEvent,
   rowIndex,
   totalLength,
   calenderEventMap,
+  selectedDate,
   onDayClick,
   onWeekClick,
   observerDomRef,
 }: {
   week: GridDay[];
+  weekEvent?: CalenderWeekEvent;
   rowIndex: number;
   totalLength: number;
   calenderEventMap: Map<string, CalenderEvent>;
+  selectedDate?: string;
   onDayClick: (day: GridDay, content: CalenderEvent | undefined) => void;
   onWeekClick: (week: GridDay[]) => void;
   observerDomRef: (node: HTMLElement | null) => void;
 }) => {
-  const weekEvent = useStore.useSlice.calender().weekEvents.find((v) => v.id === generateWeekId(week[6].dateObj, week[0].dateObj));
-
   const isFirstWeekOfMonth = week.some((v) => v.date === 1);
   const isFirstWeekOfYear = isFirstWeekOfMonth && week.some((v) => v.month === 1) && !week.some((v) => v.month === 2);
 
-  const isObserved = rowIndex + 1 === totalLength - WEEK_OFFSET_TO_LOAD;
+  const isObserved = rowIndex + 5 === totalLength;
   const hasWeekEvent = !!weekEvent;
   const [isHoverOnHeader, setIsHoverOnHeader] = useState(false);
 
@@ -134,7 +158,8 @@ const CalanderWeek = ({
         <TooltipProvider>
           {week.map((day, columnIndex) => {
             const event = calenderEventMap.get(`${rowIndex}:${columnIndex}`);
-            return <CalenderDate key={day.dateString} event={event} day={day} rowIndex={rowIndex} columnIndex={columnIndex} onDayClick={onDayClick} />;
+            const isSelectedDate = selectedDate === day.dateString;
+            return <CalenderDate key={day.dateString} event={event} day={day} columnIndex={columnIndex} onDayClick={onDayClick} isSelectedDate={isSelectedDate} />;
           })}
         </TooltipProvider>
       </div>
@@ -144,31 +169,28 @@ const CalanderWeek = ({
 
 const CalenderDate = ({
   day,
-  rowIndex,
   columnIndex,
   event,
+  isSelectedDate,
   onDayClick,
 }: {
   day: GridDay;
-  rowIndex: number;
   columnIndex: number;
   event: CalenderEvent | undefined;
+  isSelectedDate: boolean;
   onDayClick: (day: GridDay, content: CalenderEvent | undefined) => void;
 }) => {
   const isFutureDate = day.dateObj > new Date();
   const isCurrentDate = day.dateObj.toDateString() === new Date().toDateString();
-
-  const selectedDate = useParams().dayId;
-  const isSelectedDate = selectedDate === day.dateString;
 
   const className = getCalendarDateStyles(event, isCurrentDate, isFutureDate, isSelectedDate);
 
   return (
     <Tooltip key={day.dateString}>
       <TooltipTrigger asChild>
-        <button type="button" className={className.className} data-score={className.moodScore} style={{ order: 7 - columnIndex, ...className.style }} onClick={() => onDayClick(day, event)} />
+        <button id={day.dateString} type="button" className={className.className} data-score={className.moodScore} style={{ order: 7 - columnIndex, ...className.style }} onClick={() => onDayClick(day, event)} />
       </TooltipTrigger>
-      <TooltipContent side="top" className="bg-black rounded-none text-white border-black">
+      <TooltipContent side="top" className="bg-[#06101a] rounded-none text-white">
         <CalendarTooltip day={day} event={event} />
       </TooltipContent>
     </Tooltip>

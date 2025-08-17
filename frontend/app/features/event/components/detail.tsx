@@ -27,12 +27,12 @@ const markdownComponents: Components = {
   ol: ({ children }) => <ol className="mb-4 ml-6 list-decimal text-gray-200 space-y-1">{children}</ol>,
   li: ({ children }) => <li className="text-gray-200">{children}</li>,
 
-  blockquote: ({ children }) => <blockquote className="border-l-4 border-blue-500 pl-4 mb-4 bg-gray-800 py-2 italic text-gray-300">{children}</blockquote>,
+  blockquote: ({ children }) => <blockquote className="border-l-4 border-slate-500 pl-4 mb-4 bg-gray-800 py-2 italic text-gray-300">{children}</blockquote>,
 
   code: ({ children, className }) => {
     const isInline = !className;
     if (isInline) {
-      return <code className="bg-gray-700 text-gray-200 px-1.5 py-0.5 rounded text-sm font-mono">{children}</code>;
+      return <code className="bg-gray-700 text-gray-200 px-1.5 py-0.5 text-sm font-mono">{children}</code>;
     }
     // ブロックコードの場合はhighlight.jsが自動で処理するので、基本的なスタイルのみ
     return <code className={className}>{children}</code>;
@@ -40,7 +40,7 @@ const markdownComponents: Components = {
 
   pre: ({ children, className }) => (
     <div className="relative mb-4">
-      <pre className={`hljs rounded-lg overflow-x-auto border border-gray-600 p-4 bg-[#0d1117] text-[#c9d1d9] ${className || ""}`}>{children}</pre>
+      <pre className={`hljs overflow-x-auto border p-2 border-gray-600 bg-[#0d1117] text-[#c9d1d9] ${className || ""}`}>{children}</pre>
     </div>
   ),
 
@@ -66,9 +66,9 @@ const markdownComponents: Components = {
   img: ({ src, alt }) => <img src={src} alt={alt} className="max-w-full h-auto rounded-lg mb-4 border border-gray-600" />,
 };
 
-export const EventDetial = () => {
+export const EventDetail = () => {
   return (
-    <div className="py-6 text-white">
+    <div className="text-white">
       <div className="prose prose-sm max-w-none">
         <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSanitize, rehypeHighlight]} components={markdownComponents}>
           {sampleMarkdown}

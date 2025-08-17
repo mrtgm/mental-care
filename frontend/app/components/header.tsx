@@ -10,6 +10,10 @@ export const Header = () => {
           <NavLink to="/" className={({ isActive }) => (isActive ? "underline" : "")}>
             top
           </NavLink>
+          {/* TODO: diaryビュー（今のブログみたいなやつ）を用意する */}
+          <NavLink to="/diary" className={({ isActive }) => (isActive ? "underline" : "")}>
+            diary
+          </NavLink>
           <NavLink to="/graph" className={({ isActive }) => (isActive ? "underline" : "")}>
             graph
           </NavLink>
