@@ -1,13 +1,18 @@
+import { Link } from "react-router";
 import { FieldLabelMap } from "../../domains/events/constants";
 import type { SummaryMoodMetrics } from "../../domains/events/domain";
-import { calculatePanasScore, getMoodColor, getMoodEmoji, getVasColor, getVasImageUrl, getVasTextColor } from "./utils/mood";
+import { calculatePanasScore, getMoodColor, getVasColor, getVasTextColor } from "./utils/mood";
 
-export const MoodDisplay = ({ mood }: { mood: SummaryMoodMetrics }) => {
+export const MoodDisplay = ({ eventId, mood }: { eventId: string; mood: SummaryMoodMetrics }) => {
   const panasScore = calculatePanasScore(mood);
 
   return (
     <div>
-      <div className="text-white text-xs mb-1">{FieldLabelMap.mood}:</div>
+      <div className="text-white text-xs mb-1">
+        <Link to={`/graph?target=mood&eventId=${eventId}`} className="underline">
+          {FieldLabelMap.mood}:
+        </Link>
+      </div>
 
       <div className="ml-2 space-y-1">
         <div className="flex items-center gap-2">

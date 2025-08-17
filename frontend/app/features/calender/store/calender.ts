@@ -3,17 +3,6 @@ import type { AppState } from "@/store";
 import type { CalenderEvent, CalenderEventMap, CalenderGrid, CalenderWeekEvent, GridDay } from "../domains/events/domain";
 
 export interface CalenderSlice {
-  selectedGridDay: {
-    day: GridDay;
-    event: CalenderEvent | undefined;
-  } | null;
-  setSelectedGridDay: (
-    selectedGridDay: {
-      day: GridDay;
-      event: CalenderEvent | undefined;
-    } | null,
-  ) => void;
-
   // TODO: この辺、グリッドに関することとカレンダーに関することを分離したほうがいい
   events: CalenderEvent[];
   setEvents: (events: CalenderEvent[]) => void;
@@ -35,9 +24,6 @@ export interface CalenderSlice {
 }
 
 export const createCalenderSlice: StateCreator<AppState, [["zustand/devtools", never], ["zustand/immer", never], ["zustand/subscribeWithSelector", never]], [], CalenderSlice> = (set) => ({
-  selectedGridDay: null,
-  setSelectedGridDay: (selectedGridDay) => set({ selectedGridDay }),
-
   events: [],
   setEvents: (events) => set({ events }),
   addEvent: (event) => set((state) => ({ events: [...state.events, event] })),

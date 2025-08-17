@@ -1,8 +1,7 @@
 import { index, layout, type RouteConfig, route } from "@react-router/dev/routes";
 
 export default [
-  layout("routes/layout.tsx", [index("routes/home.tsx"), route("weeks/:weekId", "routes/week.tsx"), route("days/:dayId", "routes/day.tsx")]),
+  layout("routes/layout.tsx", [index("routes/home.tsx"), route("weeks/:weekId", "routes/week.tsx"), route("days/:dayId", "routes/day.tsx"), route("achievements", "routes/achievements.tsx")]),
 
   route("graph", "routes/graph.tsx"),
-  route("achievements", "routes/achievements.tsx"),
 ] satisfies RouteConfig;

@@ -1,4 +1,4 @@
-import { isSameDate } from "@/utils/date";
+import { formatDate, isSameDate } from "@/utils/date";
 
 export type Achievement = {
   id: string;
@@ -135,7 +135,7 @@ export const calcGrid = (
         month: now.getMonth() + 1,
         date: now.getDate(),
         dateObj: new Date(now),
-        dateString: now.toLocaleString(),
+        dateString: formatDate(now),
       });
 
       now.setDate(now.getDate() - 1);
@@ -149,12 +149,6 @@ export const calcGrid = (
 };
 
 export const generateWeekId = (startDate: Date, endDate: Date) => {
-  const formatDate = (date: Date) => {
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate().toString().padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  };
   return `${formatDate(startDate)}_${formatDate(endDate)}`;
 };
 
@@ -195,12 +189,19 @@ export const getCalendarDateStyles = (
   event: CalenderEvent | undefined,
   isCurrentDate: boolean,
   isFutureDate: boolean,
+  isSelectedDate: boolean,
 ): {
   className: string;
   moodScore?: number;
   style?: React.CSSProperties;
 } => {
   const baseClass = "w-6 h-6 transition-all duration-300 hover:scale-110 hover:shadow-md cursor-pointer";
+
+  if (isSelectedDate) {
+    return {
+      className: `${baseClass} bg-blue-500 text-white hover:bg-blue-600`,
+    };
+  }
 
   if (isCurrentDate) {
     return {

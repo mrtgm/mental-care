@@ -1,4 +1,5 @@
 import { useParams } from "react-router";
+import { CalenderFooter } from "@/features/calender/components/calender-footer";
 import type { Route } from "./+types/day";
 
 export function meta({ params }: Route.MetaArgs) {
@@ -9,10 +10,17 @@ export default function Day() {
   const { dayId } = useParams();
 
   return (
-    <div className="py-4 rounded text-white">
-      <h2 className="text-xl font-bold mb-2">日表示</h2>
-      <p>日付: {dayId}</p>
-      <p>この日の詳細情報やイベントを表示</p>
-    </div>
+    <>
+      <CalenderFooter />
+
+      <div className="py-4 rounded mt-8 text-white">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-2xl font-bold">{dayId}</h2>
+          <button type="button" className="text-sm text-white">
+            Edit
+          </button>
+        </div>
+      </div>
+    </>
   );
 }

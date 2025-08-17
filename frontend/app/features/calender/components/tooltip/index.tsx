@@ -20,11 +20,11 @@ export const CalendarTooltip = ({ day, event }: CalendarTooltipProps) => {
 
       {event && (
         <div className="space-y-2 mt-2">
-          <SleepTimeDisplay wakeUpTime={event.wakeUpTime} bedTime={event.bedTime} />
+          <SleepTimeDisplay eventId={event.id} wakeUpTime={event.wakeUpTime} bedTime={event.bedTime} />
 
           {event.achievements && event.achievements.length > 0 && <AchievementsDisplay achievements={event.achievements} />}
 
-          {event.mood && <MoodDisplay mood={event.mood} />}
+          {event.mood && <MoodDisplay eventId={event.id} mood={event.mood} />}
         </div>
       )}
     </div>

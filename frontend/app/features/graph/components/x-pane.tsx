@@ -1,33 +1,42 @@
 import { Tooltip, TooltipProvider, TooltipTrigger } from "@radix-ui/react-tooltip";
-import { AnimatePresence, motion, type Point, useAnimation, type Variants } from "motion/react";
+import { AnimatePresence, motion, type Point } from "motion/react";
 import { useEffect, useId, useRef, useState } from "react";
+import { Link } from "react-router";
 import { TooltipContent } from "@/components/shadcn/tooltip";
 import type { CalenderEvent } from "@/features/calender/domains/events/domain";
 import { PLOT_AREA } from "../constants";
-import { type AxisConfig, type LogicalTotalWidth, mapEventsBedtimeToPoint, mapEventsWakeUpTimeToPoint, type Tick } from "../domain";
+import { type AxisConfig, convertValueToScrollLeft, getGraphColor, getGraphTooltipContent, type LogicalTotalWidth, type TargetType, type Tick } from "../domain";
 
 export const XPane = ({
+  dateString,
+  target,
   events,
   points,
   xAxisConfig,
   yAxisConfig,
   actualTotalWidth,
   logicalTotalWidth,
+  handleClickDataPoint,
 }: {
+  dateString: string;
+  target: TargetType;
   events: CalenderEvent[];
   points: Point[];
   xAxisConfig: AxisConfig<number>;
   yAxisConfig: AxisConfig<number>;
   actualTotalWidth: number;
   logicalTotalWidth: LogicalTotalWidth;
+  handleClickDataPoint: (event: CalenderEvent) => void;
 }) => {
   const xPaneRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (xPaneRef.current) {
-      xPaneRef.current.scrollLeft = actualTotalWidth;
+      const scrollLeft = convertValueToScrollLeft(new Date(dateString).getTime(), actualTotalWidth, logicalTotalWidth, xAxisConfig);
+      const half = xPaneRef.current.clientWidth / 2;
+      xPaneRef.current.scrollLeft = scrollLeft - half;
     }
-  }, [actualTotalWidth]);
+  }, [actualTotalWidth, dateString, logicalTotalWidth, xAxisConfig]);
 
   return (
     <div className="w-full overflow-x-scroll" ref={xPaneRef}>
@@ -36,7 +45,7 @@ export const XPane = ({
 
         <XAxisTicks xAxisConfig={xAxisConfig} logicalTotalWidth={logicalTotalWidth} />
 
-        <DataPoints events={events} points={points} stroke="#007bff" />
+        <DataPoints dateString={dateString} target={target} events={events} points={points} handleClickDataPoint={handleClickDataPoint} />
       </svg>
     </div>
   );
@@ -89,7 +98,9 @@ const XAxisTicks = ({ xAxisConfig, logicalTotalWidth }: { xAxisConfig: AxisConfi
   );
 };
 
-const DataPoints = ({ events, points, stroke }: { events: CalenderEvent[]; points: Point[]; stroke: string }) => {
+const DataPoints = ({ dateString, target, events, points, handleClickDataPoint }: { dateString: string; target: TargetType; events: CalenderEvent[]; points: Point[]; handleClickDataPoint: (event: CalenderEvent) => void }) => {
+  const stroke = getGraphColor(target);
+
   const pathRef = useRef<SVGPathElement>(null);
   const [pathLength, setPathLength] = useState(0);
 
@@ -155,16 +166,35 @@ const DataPoints = ({ events, points, stroke }: { events: CalenderEvent[]; point
         {points.map((point, index) => {
           const event = events[index];
           if (!event) return null;
+
+          const isSelected = event.id === dateString;
           return (
             <Tooltip key={`${point.x}_${point.y}`} delayDuration={0}>
               <TooltipTrigger key={`${point.x}_${point.y}`} className="pointer-events-auto" asChild>
-                <rect key={`${point.x}_${point.y}`} x={point.x - 4} y={point.y - 4} width="10" height="10" fill={stroke} className="cursor-pointer" />
+                <motion.rect
+                  key={`${point.x}_${point.y}`}
+                  x={point.x - 4}
+                  y={point.y - 4}
+                  width="10"
+                  height="10"
+                  fill={isSelected ? "#fff" : getGraphColor(target)}
+                  className="cursor-pointer"
+                  whileHover={{
+                    scale: 1.5,
+                  }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  onClick={() => handleClickDataPoint(event)}
+                />
               </TooltipTrigger>
               <TooltipContent className="bg-black rounded-none text-white border-black">
                 <div className="text-xs">
                   {event.year}/{event.month}/{event.date}
                   <br />
-                  {event.bedTime}
+                  <Link to={`/days/${event.id}`} className="underline">
+                    log
+                  </Link>
+                  <br />
+                  {getGraphTooltipContent(target, event)}
                 </div>
               </TooltipContent>
             </Tooltip>

@@ -1,17 +1,17 @@
 import { MAX_HEIGHT, PLOT_AREA } from "../constants";
-import type { AxisConfig, LogicalTotalWidth } from "../domain";
+import type { AxisConfig, LogicalTotalWidth, Tick } from "../domain";
 
 export const YPane = ({ yAxisConfig }: { yAxisConfig: AxisConfig<number> }) => {
   const yAxisGap = PLOT_AREA.height / (yAxisConfig.totalPoint - 1);
 
-  const yAxisTicks = Array.from({ length: yAxisConfig.totalPoint }, (_, index) => {
+  const yAxisTicks: Tick[] = Array.from({ length: yAxisConfig.totalPoint }, (_, index) => {
     const value = yAxisConfig.getValueByTick(index);
     const y = PLOT_AREA.height - yAxisGap * index;
     return {
       x: 0,
       y,
       value,
-      formattedValue: yAxisConfig.getLabel(value),
+      label: yAxisConfig.getLabel(value),
     };
   });
 
@@ -34,7 +34,7 @@ export const YPane = ({ yAxisConfig }: { yAxisConfig: AxisConfig<number> }) => {
             <g key={v.value} transform={`translate(0, ${v.y})`}>
               <line x1="-3" y1="0.5" x2="3" y2="0.5" stroke="#fff" strokeWidth="1" />
               <text x="-8" y="3" fontSize="8" fill="#fff" textAnchor="end">
-                {yAxisConfig.getLabel(v.value)}
+                {v.label}
               </text>
             </g>
           );

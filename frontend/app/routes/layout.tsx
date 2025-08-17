@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Outlet, useNavigate } from "react-router";
+import { Outlet, useLocation, useNavigate } from "react-router";
 import { Header } from "@/components/header";
 import { sampleEvents } from "@/data/dummy-events";
 import { sampleWeekEvents } from "@/data/dummy-week-events";
@@ -14,17 +14,15 @@ import { useStore } from "@/store";
 export default function Layout() {
   const navigate = useNavigate();
 
+  const location = useLocation();
+
+  const isOnAchievementsPage = location.pathname.startsWith("/achievements");
   const calenderStore = useStore.useSlice.calender();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleDayClick = useCallback(
     (day: GridDay, event: CalenderEvent | undefined) => {
       if (day.dateObj > new Date()) return; // 未来の日付はクリック不可
-
-      calenderStore.setSelectedGridDay({
-        day,
-        event,
-      });
 
       if (event === undefined) {
         setIsDrawerOpen(true);
@@ -33,7 +31,7 @@ export default function Layout() {
         navigate(`/days/${event.id}`);
       }
     },
-    [navigate, calenderStore],
+    [navigate],
   );
 
   const handleWeekClick = useCallback(
@@ -58,15 +56,13 @@ export default function Layout() {
   return (
     <div className="w-full max-w-7xl mx-auto px-6 py-8 min-h-screen sm:max-w-full">
       <Header />
-      <div className="rounded-2xl border-gray-200 p-6 relative mb-8 sm:px-0">
+      <div className="rounded-2xl border-gray-200 p-6 relative sm:px-0">
         <div className="absolute left-0 top-0 bottom-0 w-32 h-72 bg-gradient-to-r from-[#06101a] to-transparent pointer-events-none z-10" />
         <Calender onLoadMoreEvents={handleLoadEvents} onDayClick={handleDayClick} onWeekClick={handleWeekClick} />
-        <CalenderFooter />
       </div>
 
       <Outlet />
 
-      <EventDetial />
       <EventDetialEditor isDrawerOpen={isDrawerOpen} setIsDrawerOpen={setIsDrawerOpen} />
     </div>
   );

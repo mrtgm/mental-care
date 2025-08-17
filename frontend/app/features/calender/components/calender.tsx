@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useRef, useState } from "react";
+import { useParams } from "react-router";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useStore } from "@/store";
 import { getMonthName } from "@/utils/date";
@@ -127,7 +128,6 @@ const CalenderDate = ({
   day: GridDay;
   rowIndex: number;
   columnIndex: number;
-
   onDayClick: (day: GridDay, content: CalenderEvent | undefined) => void;
 }) => {
   const calenderState = useStore.useSlice.calender();
@@ -137,7 +137,10 @@ const CalenderDate = ({
   const isFutureDate = day.dateObj > new Date();
   const isCurrentDate = day.dateObj.toDateString() === new Date().toDateString();
 
-  const className = getCalendarDateStyles(event, isCurrentDate, isFutureDate);
+  const selectedDate = useParams().dayId;
+  const isSelectedDate = selectedDate === day.dateString;
+
+  const className = getCalendarDateStyles(event, isCurrentDate, isFutureDate, isSelectedDate);
 
   return (
     <Tooltip key={day.dateString}>
