@@ -3,7 +3,7 @@ export const PLOT_AREA = {
   marginTop: 10,
   marginLeft: 40,
   marginRight: 20,
-  marginBottom: 40,
+  marginBottom: 38,
   width: 400,
   height: 200,
 
@@ -16,4 +16,4 @@ export const PLOT_AREA = {
 };
 
 // 描画エリアの最大物理サイズ
-export const MAX_HEIGHT = 300;
+export const MAX_HEIGHT = 260;

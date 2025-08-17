@@ -17,7 +17,7 @@ const calculateLogicalTotalWidth = (xConfig: AxisConfig<number>) => {
   };
 };
 
-export const Graph = ({ events, target, dateString, setSearchParams }: { events: CalenderEvent[]; target: TargetType; dateString: string; setSearchParams: SetURLSearchParams }) => {
+export const Graph = ({ events, target, dateString, handleClickDataPoint }: { events: CalenderEvent[]; target: TargetType; dateString: string; handleClickDataPoint: (event: CalenderEvent) => void }) => {
   const yPaneRef = useRef<HTMLDivElement>(null);
 
   const [actualTotalWidth, setActualTotalWidth] = useState(0);
@@ -32,13 +32,6 @@ export const Graph = ({ events, target, dateString, setSearchParams }: { events:
     const ratio = logicalTotalWidth.value / PLOT_AREA.totalHeight;
     setActualTotalWidth(yPaneRef.current.scrollHeight * ratio);
   }, [logicalTotalWidth]);
-
-  const handleClickDataPoint = useCallback(
-    (event: CalenderEvent) => {
-      setSearchParams({ eventId: event.id, target });
-    },
-    [setSearchParams, target],
-  );
 
   useResize(handleResize);
 

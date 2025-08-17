@@ -1,24 +1,37 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useStore } from "@/store";
 import { getMonthName } from "@/utils/date";
-import { WEEK_OFFSET_TO_LOAD } from "../domains/events/constants";
-import { type CalenderEvent, type GridDay, generateWeekId, getCalendarDateStyles, getMoodBasedColors } from "../domains/events/domain";
+import { WEEK_COUNT_TO_LOAD, WEEK_OFFSET_TO_LOAD } from "../domains/events/constants";
+import { type CalenderEvent, calcCalenderEventMap, calcGrid, type GridDay, generateWeekId, getCalendarDateStyles, getMoodBasedColors } from "../domains/events/domain";
 import { CalendarTooltip } from "./tooltip";
 
 export const Calender = ({
+  events,
+  count,
+  weekCountToLoad,
   onDayClick,
   onWeekClick,
   onLoadMoreEvents,
 }: {
+  events: CalenderEvent[];
+  count: number;
+  weekCountToLoad: number;
   onLoadMoreEvents: () => Promise<void>;
   onDayClick: (day: GridDay, content: CalenderEvent | undefined) => void;
   onWeekClick: (week: GridDay[]) => void;
 }) => {
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const calenderStore = useStore.useSlice.calender();
+
+  const calenderGrid = useMemo(() => {
+    return calcGrid(count, weekCountToLoad);
+  }, [count, weekCountToLoad]);
+
+  const calenderEventMap = useMemo(() => {
+    return calcCalenderEventMap(events);
+  }, [events]);
 
   const observerDomRef = useCallback(
     (node: HTMLElement | null) => {
@@ -47,14 +60,22 @@ export const Calender = ({
   );
 
   return (
-    <div
-      className="w-full h-64 overflow-x-scroll overflow-y-visible flex flex-row-reverse
-						relative gap-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-    >
+    <div className="mt-2 w-full overflow-x-scroll overflow-y-visible flex flex-row-reverse relative gap-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
       <AnimatePresence>
-        {calenderStore.calenderGrid.map((week, rowIndex, self) => {
+        {calenderGrid.map((week, rowIndex, self) => {
           const totalLength = self.length;
-          return <CalanderWeek key={`${week[0].dateString}`} week={week} rowIndex={rowIndex} totalLength={totalLength} onDayClick={onDayClick} onWeekClick={onWeekClick} observerDomRef={observerDomRef} />;
+          return (
+            <CalanderWeek
+              key={`${week[0].dateString}`}
+              week={week}
+              rowIndex={rowIndex}
+              totalLength={totalLength}
+              onDayClick={onDayClick}
+              onWeekClick={onWeekClick}
+              observerDomRef={observerDomRef}
+              calenderEventMap={calenderEventMap}
+            />
+          );
         })}
       </AnimatePresence>
     </div>
@@ -65,6 +86,7 @@ const CalanderWeek = ({
   week,
   rowIndex,
   totalLength,
+  calenderEventMap,
   onDayClick,
   onWeekClick,
   observerDomRef,
@@ -72,6 +94,7 @@ const CalanderWeek = ({
   week: GridDay[];
   rowIndex: number;
   totalLength: number;
+  calenderEventMap: Map<string, CalenderEvent>;
   onDayClick: (day: GridDay, content: CalenderEvent | undefined) => void;
   onWeekClick: (week: GridDay[]) => void;
   observerDomRef: (node: HTMLElement | null) => void;
@@ -96,22 +119,23 @@ const CalanderWeek = ({
       {...(isObserved && { ref: observerDomRef })}
     >
       <button type="button" className="h-[40px] flex items-center justify-center mb-3 cursor-pointer" onMouseEnter={() => setIsHoverOnHeader(true)} onMouseLeave={() => setIsHoverOnHeader(false)} onClick={() => onWeekClick(week)}>
-        {isFirstWeekOfYear && <span className="absolute top-0 text-sm text-white">{week.at(0)?.year ?? 0}</span>}
+        {isFirstWeekOfYear && <span className="absolute top-0 text-xs text-white">{week.at(0)?.year ?? 0}</span>}
         {hasWeekEvent ? (
-          <span className="w-[26px] h-[26px] absolute top-[21px]" style={{ background: getMoodBasedColors(20).backgroundColor }} />
+          <span className="w-6 h-6 absolute top-[21px]" style={{ background: getMoodBasedColors(20).backgroundColor }} />
         ) : (
           <AnimatePresence>
-            {isHoverOnHeader && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-[26px] h-[26px] absolute top-[21px]" style={{ backgroundColor: getMoodBasedColors(20).backgroundColor }}></motion.span>}
+            {isHoverOnHeader && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-6 h-6 absolute top-[21px]" style={{ backgroundColor: getMoodBasedColors(20).backgroundColor }}></motion.span>}
           </AnimatePresence>
         )}
         {isFirstWeekOfMonth && <span className="absolute top-[26px] text-xs text-white">{getMonthName(week.at(0)?.dateObj)}</span>}
       </button>
 
-      <div className="flex-1 flex flex-col gap-1.5">
+      <div className="flex-1 flex flex-col gap-2">
         <TooltipProvider>
-          {week.map((day, columnIndex) => (
-            <CalenderDate key={day.dateString} day={day} rowIndex={rowIndex} columnIndex={columnIndex} onDayClick={onDayClick} />
-          ))}
+          {week.map((day, columnIndex) => {
+            const event = calenderEventMap.get(`${rowIndex}:${columnIndex}`);
+            return <CalenderDate key={day.dateString} event={event} day={day} rowIndex={rowIndex} columnIndex={columnIndex} onDayClick={onDayClick} />;
+          })}
         </TooltipProvider>
       </div>
     </motion.div>
@@ -122,18 +146,15 @@ const CalenderDate = ({
   day,
   rowIndex,
   columnIndex,
-
+  event,
   onDayClick,
 }: {
   day: GridDay;
   rowIndex: number;
   columnIndex: number;
+  event: CalenderEvent | undefined;
   onDayClick: (day: GridDay, content: CalenderEvent | undefined) => void;
 }) => {
-  const calenderState = useStore.useSlice.calender();
-
-  const event = calenderState.eventMap.get(`${rowIndex}:${columnIndex}`);
-
   const isFutureDate = day.dateObj > new Date();
   const isCurrentDate = day.dateObj.toDateString() === new Date().toDateString();
 

@@ -111,19 +111,13 @@ export const calcCalenderEventMap = (events: CalenderEvent[]): CalenderEventMap 
   return calenderEventMap;
 };
 
-export const calcGrid = (
-  startDate: Date,
-  weekCountToLoad: number,
-): {
-  calenderGrid: CalenderGrid;
-  startDate: Date;
-} => {
+export const calcGrid = (count: number, weekCountToLoad: number): CalenderGrid => {
   const calenderGrid: CalenderGrid = [];
 
-  let remainingWeeks = weekCountToLoad;
+  let remainingWeeks = weekCountToLoad * count; // 週数を計算
 
   // 土曜に
-  const now = new Date(startDate);
+  const now = new Date();
   now.setDate(now.getDate() + (6 - now.getDay()));
 
   while (remainingWeeks > 0) {
@@ -145,7 +139,7 @@ export const calcGrid = (
     remainingWeeks--;
   }
 
-  return { calenderGrid, startDate: new Date(now) };
+  return calenderGrid;
 };
 
 export const generateWeekId = (startDate: Date, endDate: Date) => {
@@ -229,6 +223,10 @@ export const getCalendarDateStyles = (
   }
 
   return {
-    className: `${baseClass} border-gray-200 hover:bg-gray-200 hover:border-gray-300 bg-gray-900 bg-opacity-25`,
+    className: `${baseClass} hover:bg-gray-200 hover:border-gray-300 bg-gray-900`,
+    style: {
+      border: "1px dashed #3f485a",
+      backgroundColor: "transparent",
+    },
   };
 };

@@ -71,12 +71,14 @@ const XAxisTicks = ({ xAxisConfig, logicalTotalWidth }: { xAxisConfig: AxisConfi
     const value = xAxisConfig.getValueByTick(index);
     const x = logicalTotalWidth.withoutMargin - index * xAxisConfig.gap;
     const y = PLOT_AREA.height;
+    const dateObj = new Date(value);
 
     return {
       x,
       y,
       value,
       label: xAxisConfig.getLabel(value),
+      dateObj,
     };
   });
 
@@ -88,9 +90,14 @@ const XAxisTicks = ({ xAxisConfig, logicalTotalWidth }: { xAxisConfig: AxisConfi
         return (
           <g key={v.value} transform={`translate(${v.x}, ${v.y})`}>
             <line x1="0.5" y1="-3" x2="0.5" y2="3" stroke="#fff" strokeWidth="1" />
-            <text x="0" y="15" fontSize="8" fill="#fff" textAnchor="middle">
+            <text x="0" y="15" fontSize="10" fill="#fff" textAnchor="middle">
               {v.label}
             </text>
+            {v.dateObj.getMonth() === 0 && (
+              <text x="0" y="30" fontSize="10" fill="#fff" textAnchor="middle">
+                {v.dateObj.getFullYear()}
+              </text>
+            )}
           </g>
         );
       })}

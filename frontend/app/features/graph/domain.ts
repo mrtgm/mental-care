@@ -224,4 +224,5 @@ export type Tick = {
   y: number;
   value: number;
   label: string;
+  dateObj: Date;
 };

@@ -7,11 +7,13 @@ export const YPane = ({ yAxisConfig }: { yAxisConfig: AxisConfig<number> }) => {
   const yAxisTicks: Tick[] = Array.from({ length: yAxisConfig.totalPoint }, (_, index) => {
     const value = yAxisConfig.getValueByTick(index);
     const y = PLOT_AREA.height - yAxisGap * index;
+    const dateObj = new Date(value);
     return {
       x: 0,
       y,
       value,
       label: yAxisConfig.getLabel(value),
+      dateObj,
     };
   });
 
@@ -33,7 +35,7 @@ export const YPane = ({ yAxisConfig }: { yAxisConfig: AxisConfig<number> }) => {
           return (
             <g key={v.value} transform={`translate(0, ${v.y})`}>
               <line x1="-3" y1="0.5" x2="3" y2="0.5" stroke="#fff" strokeWidth="1" />
-              <text x="-8" y="3" fontSize="8" fill="#fff" textAnchor="end">
+              <text x="-8" y="3" fontSize="10" fill="#fff" textAnchor="end">
                 {v.label}
               </text>
             </g>

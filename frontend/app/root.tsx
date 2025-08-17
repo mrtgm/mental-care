@@ -27,14 +27,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const calenderStore = useStore.useSlice.calender();
 
   const handleLoadEvents = useCallback(async () => {
-    const { calenderGrid: newCalenderGrid, startDate: updatedStartDate } = calcGrid(calenderStore.startDate, WEEK_COUNT_TO_LOAD);
-    const calenderEventMap = calcCalenderEventMap(sampleEvents);
-
     calenderStore.setEvents(sampleEvents);
     calenderStore.setWeekEvents(sampleWeekEvents);
-    calenderStore.setEventMap(calenderEventMap);
-    calenderStore.setCalenderGrid([...calenderStore.calenderGrid, ...newCalenderGrid]);
-    calenderStore.setStartDate(updatedStartDate);
   }, [calenderStore]);
 
   useEffect(() => {

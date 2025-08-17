@@ -443,6 +443,23 @@ export const sampleEvents = [
       vas: 80,
     },
   },
+  {
+    id: "2023-01-01",
+    year: 2023,
+    month: 1,
+    date: 1,
+    wakeUpTime: "11:00",
+    bedTime: "01:00",
+    achievements: ["new_year_celebration", "reflection", "resolution_making"],
+    weather: "snowy",
+    mood: {
+      panasSf: {
+        positive: 4.3,
+        negative: 1.5,
+      },
+      vas: 80,
+    },
+  },
 ] as const satisfies CalenderEvent[];
 
 // 追加のachievementカテゴリーの例

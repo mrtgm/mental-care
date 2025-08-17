@@ -1,7 +1,7 @@
 import type { SetURLSearchParams } from "react-router";
 import { BEDTIME_COLOR, MOOD_COLOR, type TargetType, WAKEUP_COLOR } from "../domain";
 
-export const GraphFooter = ({ dateString, setSearchParams }: { dateString: string; setSearchParams: SetURLSearchParams }) => {
+export const GraphFooter = ({ handleGraphTypeChange }: { handleGraphTypeChange: (type: TargetType) => void }) => {
   const graphTypes: { color: string; value: TargetType }[] = [
     {
       color: BEDTIME_COLOR,
@@ -16,10 +16,6 @@ export const GraphFooter = ({ dateString, setSearchParams }: { dateString: strin
       value: "mood",
     },
   ];
-
-  const handleGraphTypeChange = (type: TargetType) => {
-    setSearchParams({ target: type, eventId: dateString });
-  };
 
   return (
     <div className="flex items-center justify-between pt-6 border-t-1 border-gray-200">

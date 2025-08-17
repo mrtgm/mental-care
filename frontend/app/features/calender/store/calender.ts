@@ -13,14 +13,14 @@ export interface CalenderSlice {
   weekEvents: CalenderWeekEvent[];
   setWeekEvents: (weekEvents: CalenderWeekEvent[]) => void;
 
-  eventMap: CalenderEventMap;
-  setEventMap: (eventMap: CalenderEventMap) => void;
+  // eventMap: CalenderEventMap;
+  // setEventMap: (eventMap: CalenderEventMap) => void;
 
-  calenderGrid: CalenderGrid;
-  setCalenderGrid: (calenderGrid: CalenderGrid) => void;
+  // calenderGrid: CalenderGrid;
+  // setCalenderGrid: (calenderGrid: CalenderGrid) => void;
 
-  startDate: Date;
-  setStartDate: (startDate: Date) => void;
+  count: number;
+  incrementCount: () => void;
 }
 
 export const createCalenderSlice: StateCreator<AppState, [["zustand/devtools", never], ["zustand/immer", never], ["zustand/subscribeWithSelector", never]], [], CalenderSlice> = (set) => ({
@@ -39,12 +39,12 @@ export const createCalenderSlice: StateCreator<AppState, [["zustand/devtools", n
   weekEvents: [],
   setWeekEvents: (weekEvents) => set({ weekEvents }),
 
-  eventMap: new Map(),
-  setEventMap: (eventMap) => set({ eventMap }),
+  // eventMap: new Map(),
+  // setEventMap: (eventMap) => set({ eventMap }),
 
-  calenderGrid: [],
-  setCalenderGrid: (calenderGrid) => set({ calenderGrid }),
+  // calenderGrid: [],
+  // setCalenderGrid: (calenderGrid) => set({ calenderGrid }),
 
-  startDate: new Date(),
-  setStartDate: (startDate) => set({ startDate }),
+  count: 1,
+  incrementCount: () => set((state) => ({ count: state.count + 1 })),
 });
