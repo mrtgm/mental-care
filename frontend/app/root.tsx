@@ -2,6 +2,12 @@ import { isRouteErrorResponse, Links, Meta, Outlet, Scripts, ScrollRestoration }
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { useCallback, useEffect, useRef } from "react";
+import { sampleEvents } from "./data/dummy-events";
+import { sampleWeekEvents } from "./data/dummy-week-events";
+import { WEEK_COUNT_TO_LOAD } from "./features/calender/domains/events/constants";
+import { calcCalenderEventMap, calcGrid } from "./features/calender/domains/events/domain";
+import { useStore } from "./store";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -17,6 +23,27 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const isInitialized = useRef(false);
+  const calenderStore = useStore.useSlice.calender();
+
+  const handleLoadEvents = useCallback(async () => {
+    const { calenderGrid: newCalenderGrid, startDate: updatedStartDate } = calcGrid(calenderStore.startDate, WEEK_COUNT_TO_LOAD);
+    const calenderEventMap = calcCalenderEventMap(sampleEvents);
+
+    calenderStore.setEvents(sampleEvents);
+    calenderStore.setWeekEvents(sampleWeekEvents);
+    calenderStore.setEventMap(calenderEventMap);
+    calenderStore.setCalenderGrid([...calenderStore.calenderGrid, ...newCalenderGrid]);
+    calenderStore.setStartDate(updatedStartDate);
+  }, [calenderStore]);
+
+  useEffect(() => {
+    if (!isInitialized.current) {
+      handleLoadEvents();
+      isInitialized.current = true;
+    }
+  }, [handleLoadEvents]);
+
   return (
     <html lang="en" className="h-full w-full bg-white">
       <head>

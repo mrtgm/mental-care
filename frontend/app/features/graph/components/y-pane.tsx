@@ -24,8 +24,6 @@ export const YPane = ({ yAxisConfig }: { yAxisConfig: AxisConfig<number> }) => {
         maxWidth: (PLOT_AREA.width / PLOT_AREA.totalHeight) * MAX_HEIGHT,
       }}
     >
-      <title>Graph-Y</title>
-
       <rect x="0" y="0" width={PLOT_AREA.marginLeft} height={PLOT_AREA.marginTop + PLOT_AREA.height + 20} fill="#06101a" />
 
       <g transform={`translate(${PLOT_AREA.marginLeft}, ${PLOT_AREA.marginTop})`}>

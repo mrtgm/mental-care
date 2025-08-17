@@ -14,20 +14,8 @@ import { useStore } from "@/store";
 export default function Layout() {
   const navigate = useNavigate();
 
-  const isInitialized = useRef(false);
   const calenderStore = useStore.useSlice.calender();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  const handleLoadEvents = useCallback(async () => {
-    const { calenderGrid: newCalenderGrid, startDate: updatedStartDate } = calcGrid(calenderStore.startDate, WEEK_COUNT_TO_LOAD);
-    const calenderEventMap = calcCalenderEventMap(sampleEvents);
-
-    calenderStore.setEvents(sampleEvents);
-    calenderStore.setWeekEvents(sampleWeekEvents);
-    calenderStore.setEventMap(calenderEventMap);
-    calenderStore.setCalenderGrid([...calenderStore.calenderGrid, ...newCalenderGrid]);
-    calenderStore.setStartDate(updatedStartDate);
-  }, [calenderStore]);
 
   const handleDayClick = useCallback(
     (day: GridDay, event: CalenderEvent | undefined) => {
@@ -55,12 +43,17 @@ export default function Layout() {
     [navigate],
   );
 
-  useEffect(() => {
-    if (!isInitialized.current) {
-      handleLoadEvents();
-      isInitialized.current = true;
-    }
-  }, [handleLoadEvents]);
+  // TODO: ここは要リファクタ、Grid の構築とデータのロードを分離しないと
+  const handleLoadEvents = useCallback(async () => {
+    const { calenderGrid: newCalenderGrid, startDate: updatedStartDate } = calcGrid(calenderStore.startDate, WEEK_COUNT_TO_LOAD);
+    const calenderEventMap = calcCalenderEventMap(sampleEvents);
+
+    calenderStore.setEvents(sampleEvents);
+    calenderStore.setWeekEvents(sampleWeekEvents);
+    calenderStore.setEventMap(calenderEventMap);
+    calenderStore.setCalenderGrid([...calenderStore.calenderGrid, ...newCalenderGrid]);
+    calenderStore.setStartDate(updatedStartDate);
+  }, [calenderStore]);
 
   return (
     <div className="w-full max-w-7xl mx-auto px-6 py-8 min-h-screen sm:max-w-full">

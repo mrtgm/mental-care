@@ -1,7 +1,21 @@
+import * as z from "zod";
 import type { CalenderEvent } from "@/features/calender/domains/events/domain";
-import { convertTimeToMs, getMsFromMonthEnd, getMsOfMonth } from "@/utils/date";
+import { convertTimeToMs, formatDate, getMsFromMonthEnd, getMsOfMonth } from "@/utils/date";
 import { floorToPrecision } from "@/utils/math";
 import { PLOT_AREA } from "./constants";
+
+export const TargetTypeSchema = z.enum(["bedtime", "wakeuptime", "mood"]);
+export type TargetType = z.infer<typeof TargetTypeSchema>;
+
+export const DateStringSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "expecting YYYY-MM-DD")
+  .refine((dateStr) => {
+    const date = new Date(dateStr);
+    return !Number.isNaN(date.getTime()) && dateStr === formatDate(date);
+  }, "invalid date");
+
+export type DateString = z.infer<typeof DateStringSchema>;
 
 // グラフのX,Y軸の設定
 export type AxisConfig<T> = {

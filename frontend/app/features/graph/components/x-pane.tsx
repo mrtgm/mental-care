@@ -1,26 +1,27 @@
-import type { Point } from "motion/react";
-import { useEffect, useId, useRef } from "react";
+import { Tooltip, TooltipProvider, TooltipTrigger } from "@radix-ui/react-tooltip";
+import { AnimatePresence, motion, type Point, useAnimation, type Variants } from "motion/react";
+import { useEffect, useId, useRef, useState } from "react";
+import { TooltipContent } from "@/components/shadcn/tooltip";
 import type { CalenderEvent } from "@/features/calender/domains/events/domain";
 import { PLOT_AREA } from "../constants";
 import { type AxisConfig, type LogicalTotalWidth, mapEventsBedtimeToPoint, mapEventsWakeUpTimeToPoint, type Tick } from "../domain";
 
 export const XPane = ({
   events,
+  points,
   xAxisConfig,
   yAxisConfig,
   actualTotalWidth,
   logicalTotalWidth,
 }: {
   events: CalenderEvent[];
+  points: Point[];
   xAxisConfig: AxisConfig<number>;
   yAxisConfig: AxisConfig<number>;
   actualTotalWidth: number;
   logicalTotalWidth: LogicalTotalWidth;
 }) => {
   const xPaneRef = useRef<HTMLDivElement>(null);
-
-  const data = mapEventsBedtimeToPoint(events, xAxisConfig, yAxisConfig);
-  const wakeUpData = mapEventsWakeUpTimeToPoint(events, xAxisConfig, yAxisConfig);
 
   useEffect(() => {
     if (xPaneRef.current) {
@@ -31,14 +32,11 @@ export const XPane = ({
   return (
     <div className="w-full overflow-x-scroll" ref={xPaneRef}>
       <svg viewBox={`0 0 ${logicalTotalWidth.value} ${PLOT_AREA.totalHeight}`} xmlns="http://www.w3.org/2000/svg" style={{ width: actualTotalWidth }}>
-        <title>Graph-X</title>
-
         <Grid xAxisGap={xAxisConfig.gap} yAxisGap={yAxisConfig.gap} logicalTotalWidth={logicalTotalWidth} />
 
         <XAxisTicks xAxisConfig={xAxisConfig} logicalTotalWidth={logicalTotalWidth} />
 
-        <DataPoints data={data} stroke="#007bff" />
-        <DataPoints data={wakeUpData} stroke="#dc3545" />
+        <DataPoints events={events} points={points} stroke="#007bff" />
       </svg>
     </div>
   );
@@ -91,7 +89,10 @@ const XAxisTicks = ({ xAxisConfig, logicalTotalWidth }: { xAxisConfig: AxisConfi
   );
 };
 
-const DataPoints = ({ data, stroke }: { data: Point[]; stroke: string }) => {
+const DataPoints = ({ events, points, stroke }: { events: CalenderEvent[]; points: Point[]; stroke: string }) => {
+  const pathRef = useRef<SVGPathElement>(null);
+  const [pathLength, setPathLength] = useState(0);
+
   // ポイントの配列からベジェ曲線のパスを生成
   const generatePath = (points: Point[]) => {
     if (points.length === 0) return "";
@@ -127,13 +128,49 @@ const DataPoints = ({ data, stroke }: { data: Point[]; stroke: string }) => {
     return path;
   };
 
+  useEffect(() => {
+    if (!pathRef.current || !points) return;
+    const length = pathRef.current.getTotalLength();
+    setPathLength(length);
+  }, [points]);
+
   return (
     <g transform={`translate(${PLOT_AREA.marginLeft}, ${PLOT_AREA.marginTop})`}>
-      <path d={generatePath(data)} fill="none" stroke={stroke} strokeWidth="1" strokeLinecap="round" />
+      <AnimatePresence key={points[0]?.y}>
+        <motion.path
+          ref={pathRef}
+          d={generatePath(points)}
+          fill="none"
+          stroke={stroke}
+          strokeWidth="1"
+          strokeLinecap="round"
+          strokeDasharray={pathLength}
+          strokeDashoffset={-pathLength}
+          animate={{ strokeDashoffset: 0 }}
+          transition={{ duration: 1.5, ease: "easeOut", delay: 0 }}
+        />
+      </AnimatePresence>
 
-      {data.map((point) => (
-        <rect key={`${point.x}_${point.y}`} x={point.x - 4} y={point.y - 4} width="8" height="8" fill={stroke} style={{ pointerEvents: "none" }} />
-      ))}
+      <TooltipProvider>
+        {points.map((point, index) => {
+          const event = events[index];
+          if (!event) return null;
+          return (
+            <Tooltip key={`${point.x}_${point.y}`} delayDuration={0}>
+              <TooltipTrigger key={`${point.x}_${point.y}`} className="pointer-events-auto" asChild>
+                <rect key={`${point.x}_${point.y}`} x={point.x - 4} y={point.y - 4} width="10" height="10" fill={stroke} className="cursor-pointer" />
+              </TooltipTrigger>
+              <TooltipContent className="bg-black rounded-none text-white border-black">
+                <div className="text-xs">
+                  {event.year}/{event.month}/{event.date}
+                  <br />
+                  {event.bedTime}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
+      </TooltipProvider>
     </g>
   );
 };

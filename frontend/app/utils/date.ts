@@ -2,6 +2,15 @@ export const isSameDate = (date1: Date, date2: Date): boolean => {
   return date1.getFullYear() === date2.getFullYear() && date1.getMonth() === date2.getMonth() && date1.getDate() === date2.getDate();
 };
 
+// Date から YYYY-MM-DD 形式の文字列を生成
+export const formatDate = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const dateStr = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${dateStr}`;
+};
+
+// 月の英語名を取得
 export const getMonthName = (monthNumber: Date | undefined, locale = "en-US", format: "short" | "long" | "narrow" = "short") => {
   if (!monthNumber) return "";
   return new Intl.DateTimeFormat(locale, { month: format }).format(monthNumber);

@@ -53,7 +53,7 @@ export const Calender = ({
       <AnimatePresence>
         {calenderStore.calenderGrid.map((week, rowIndex, self) => {
           const totalLength = self.length;
-          return <CalanderWeek key={`${week[0].date}`} week={week} rowIndex={rowIndex} totalLength={totalLength} onDayClick={onDayClick} onWeekClick={onWeekClick} observerDomRef={observerDomRef} />;
+          return <CalanderWeek key={`${week[0].dateString}`} week={week} rowIndex={rowIndex} totalLength={totalLength} onDayClick={onDayClick} onWeekClick={onWeekClick} observerDomRef={observerDomRef} />;
         })}
       </AnimatePresence>
     </div>
@@ -88,7 +88,7 @@ const CalanderWeek = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 1, ease: "easeInOut" }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
       exit={{ opacity: 0, y: -20 }}
       key={rowIndex}
       className="flex-shrink-0 w-6 h-full flex flex-col"

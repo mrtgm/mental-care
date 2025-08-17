@@ -1,11 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { CalenderEvent } from "@/features/calender/domains/events/domain";
-import { type UseResizeCallbackArgs, useResize } from "@/hooks/use-resize";
-import { convertMsToTime, convertTimeToMs, getMonthName, getMsFromMonthEnd, getMsOfMonth } from "@/utils/date";
-import { floorToPrecision } from "@/utils/math";
+import { useResize } from "@/hooks/use-resize";
+import { convertMsToTime, convertTimeToMs, getMonthName } from "@/utils/date";
 import { PLOT_AREA } from "../constants";
-import { type AxisConfig, mapDateToXAxis, mapMsToYAxis } from "../domain";
-import { GraphFooter } from "./graph-footer";
+import { type AxisConfig, mapDateToXAxis, mapEventsBedtimeToPoint, mapEventsWakeUpTimeToPoint, mapMsToYAxis } from "../domain";
 import { XPane } from "./x-pane";
 import { YPane } from "./y-pane";
 
@@ -45,7 +43,7 @@ const logicalTotalWidth = {
   },
 };
 
-export const Graph = ({ events }: { events: CalenderEvent[] }) => {
+export const Graph = ({ events, target, dateString }: { events: CalenderEvent[]; target: string; dateString: string }) => {
   const yPaneRef = useRef<HTMLDivElement>(null);
 
   const [actualTotalWidth, setActualTotalWidth] = useState(0);
@@ -58,10 +56,18 @@ export const Graph = ({ events }: { events: CalenderEvent[] }) => {
 
   useResize(handleResize);
 
+  const points = useMemo(() => {
+    if (target === "bedtime") {
+      return mapEventsBedtimeToPoint(events, xAxisConfig, yAxisConfig);
+    } else {
+      return mapEventsWakeUpTimeToPoint(events, xAxisConfig, yAxisConfig);
+    }
+  }, [events, target]);
+
   return (
     <div className="w-full relative">
       <div className="w-full overflow-x-scroll">
-        <XPane events={events} xAxisConfig={xAxisConfig} yAxisConfig={yAxisConfig} actualTotalWidth={actualTotalWidth} logicalTotalWidth={logicalTotalWidth} />
+        <XPane events={events} points={points} xAxisConfig={xAxisConfig} yAxisConfig={yAxisConfig} actualTotalWidth={actualTotalWidth} logicalTotalWidth={logicalTotalWidth} />
       </div>
 
       <div className="absolute top-0 left-0 w-full pointer-events-none" ref={yPaneRef}>
