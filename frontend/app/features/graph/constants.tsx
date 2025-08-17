@@ -1,3 +1,4 @@
+// 描画エリアの論理サイズ
 export const PLOT_AREA = {
   marginTop: 10,
   marginLeft: 40,
@@ -13,3 +14,6 @@ export const PLOT_AREA = {
     return this.marginTop + this.height + this.marginBottom;
   },
 };
+
+// 描画エリアの最大物理サイズ
+export const MAX_HEIGHT = 500;

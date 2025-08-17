@@ -1,89 +1,70 @@
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { CalenderEvent } from "@/features/calender/domains/events/domain";
-import { convertTimeToMs, getMsFromMonthEnd, getMsOfMonth } from "@/utils/date";
+import { type UseResizeCallbackArgs, useResize } from "@/hooks/use-resize";
+import { convertMsToTime, convertTimeToMs, getMsFromMonthEnd, getMsOfMonth } from "@/utils/date";
 import { floorToPrecision } from "@/utils/math";
 import { PLOT_AREA } from "../constants";
+import { type AxisConfig, mapDateToXAxis, mapMsToYAxis } from "../domain";
 import { XPane } from "./x-pane";
 import { YPane } from "./y-pane";
 
-export type AxisConfig<T> = {
-  maxPointPerViewport?: number;
-  totalPoint: number;
-  startValue: T;
-  mapFn: (value: T) => number;
-  gapValueFn: (value: T, index: number) => T;
-  fmtFn: (value: T) => string;
-};
-
-const YAxisConfig: AxisConfig<number> = {
-  totalPoint: 12,
+const yAxisConfig: AxisConfig<number> = {
+  totalPoint: 7,
   startValue: convertTimeToMs("5:00"), // 5:00を基準にする
-  gapValueFn: (v, index) => v + index * 60 * 60 * 1000 * 2, // 2時間ごとに増加
-  mapFn: (value) => {
-    const maxValue = YAxisConfig.gapValueFn(YAxisConfig.startValue, YAxisConfig.totalPoint - 1);
-    const range = maxValue - YAxisConfig.startValue;
-
-    // 下から上に向かう場合
-    const y = ((maxValue - value) / range) * PLOT_AREA.height;
-    return y;
+  get gap() {
+    return PLOT_AREA.height / (yAxisConfig.totalPoint - 1);
   },
-  fmtFn: (value) => `${Math.floor(value / (60 * 60 * 1000))}:${String((value / (60 * 1000)) % 60).padStart(2, "0")}`, // 時間:分形式に変換
+  getValueByTick: (index) => yAxisConfig.startValue + index * ((60 * 60 * 1000 * 24) / (yAxisConfig.totalPoint - 1)),
+  getCoordByValue: (value) => mapMsToYAxis(value, yAxisConfig),
+  getLabel: (value) => convertMsToTime(value),
 };
 
-const XAxisConfig: AxisConfig<number> = {
-  maxPointPerViewport: 5,
-  totalPoint: 10,
-  startValue: Date.now(),
-  gapValueFn: (v, index) => {
-    const date = new Date(v);
+const xAxisConfig: AxisConfig<number> = {
+  maxPointPerViewport: 1,
+  totalPoint: 12,
+  startValue: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).getTime(), // 来月の初日を基準にする
+  get gap() {
+    return PLOT_AREA.width / (xAxisConfig.maxPointPerViewport ?? 1 - 1);
+  },
+  getValueByTick: (index) => {
+    const date = new Date(xAxisConfig.startValue);
     date.setMonth(date.getMonth() - index);
     return date.getTime();
   },
-  mapFn: (value) => {
-    if (typeof value !== "number") throw new Error("Value must be a number");
+  getCoordByValue: (value) => mapDateToXAxis(value, xAxisConfig),
+  getLabel: (value) => `${new Date(value).getMonth() + 1}月`,
+};
 
-    const date = new Date(value);
-    date.setHours(0, 0, 0, 0); // 時間を0に設定して日付のみを考慮
-
-    const startDate = new Date(XAxisConfig.startValue);
-    startDate.setHours(0, 0, 0, 0);
-
-    if (date.getTime() > startDate.getTime()) throw new Error("Date cannot be in the future");
-
-    // 月の開始日を基準にして、X座標を計算
-    let index = 0;
-
-    startDate.setDate(1);
-    while (date.getTime() < startDate.getTime()) {
-      startDate.setMonth(startDate.getMonth() - 1);
-      startDate.setDate(1);
-      index++;
-    }
-
-    // 行き過ぎた分を計算してX座標を調整
-    const x = (index - 1) * XAxisGap + floorToPrecision(getMsFromMonthEnd(date) / getMsOfMonth(date), 100) * XAxisGap;
-
-    // 全体の幅から引く
-    return XAxisGap * (XAxisConfig.totalPoint - 1) - x;
+const logicalTotalWidth = {
+  get value() {
+    return xAxisConfig.gap * (xAxisConfig.totalPoint - 1) + PLOT_AREA.marginLeft + PLOT_AREA.marginRight;
   },
-  fmtFn: (value) => {
-    const date = new Date(value);
-    return `${date.getMonth() + 1}月`;
+  get withoutMargin() {
+    return xAxisConfig.gap * (xAxisConfig.totalPoint - 1);
   },
 };
 
-// Gap の扱いどうしよっかなあ〜
-const XAxisGap = PLOT_AREA.width / (XAxisConfig.maxPointPerViewport ?? 1 - 1);
-const YAxisGap = PLOT_AREA.height / (YAxisConfig.totalPoint - 1);
-
 export const Graph = ({ events }: { events: CalenderEvent[] }) => {
+  const yPaneRef = useRef<HTMLDivElement>(null);
+
+  const [actualTotalWidth, setActualTotalWidth] = useState(0);
+
+  const handleResize = useCallback(() => {
+    if (!yPaneRef.current) return;
+    const ratio = logicalTotalWidth.value / PLOT_AREA.totalHeight;
+    setActualTotalWidth(yPaneRef.current.scrollHeight * ratio);
+  }, []);
+
+  useResize(handleResize);
+
   return (
     <div className="w-dvw relative">
       <div className="w-full overflow-x-scroll">
-        <XPane events={events} xAxisConfig={XAxisConfig} yAxisConfig={YAxisConfig} />
+        <XPane events={events} xAxisConfig={xAxisConfig} yAxisConfig={yAxisConfig} actualTotalWidth={actualTotalWidth} logicalTotalWidth={logicalTotalWidth} />
       </div>
 
-      <div className="absolute top-0 left-0 w-full pointer-events-none">
-        <YPane yAxisConfig={YAxisConfig} />
+      <div className="absolute top-0 left-0 w-full pointer-events-none" ref={yPaneRef}>
+        <YPane yAxisConfig={yAxisConfig} />
       </div>
     </div>
   );

@@ -20,11 +20,11 @@ export default function SleepingTime() {
   const { weekId } = useParams();
 
   return (
-    <div className="w-full max-w-7xl mx-auto bg-white min-h-screen sm:max-w-full">
+    <div className="w-full max-w-7xl mx-auto min-h-screen sm:max-w-full">
       <div className="px-6 py-8">
         <Header />
       </div>
-      <div className="bg-white rounded-2xl border-gray-200 p-6 relative mb-8 sm:px-0">
+      <div className="rounded-2xl border-gray-200 p-6 relative mb-8 sm:px-0">
         <div className="absolute left-0 top-0 bottom-0 w-full h-72">
           <Graph events={sampleEvents} />
         </div>

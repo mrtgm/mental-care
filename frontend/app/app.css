@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
+  --font-sans: "Silkscreen", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
@@ -13,6 +13,8 @@ body {
   overscroll-behavior-x: none;
   overscroll-behavior-y: none;
   scroll-behavior: smooth;
+
+  background-color: #06101a;
 }
 
 @theme inline {

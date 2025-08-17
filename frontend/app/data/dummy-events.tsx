@@ -2,6 +2,210 @@ import type { CalenderEvent } from "@/features/calender/domains/events/domain";
 
 export const sampleEvents = [
   {
+    id: "2025-08-17",
+    year: 2025,
+    month: 8,
+    date: 17,
+    wakeUpTime: "06:30",
+    bedTime: "23:15",
+    achievements: ["study", "exercise", "cooking", "meditation"],
+    weather: "sunny",
+    mood: {
+      panasSf: {
+        positive: 4.1,
+        negative: 1.3,
+      },
+      vas: 82,
+    },
+  },
+  {
+    id: "2025-08-16",
+    year: 2025,
+    month: 8,
+    date: 16,
+    wakeUpTime: "07:00",
+    bedTime: "00:30",
+    achievements: ["work_project", "talk_with_friends", "movie_night"],
+    weather: "cloudy",
+    mood: {
+      panasSf: {
+        positive: 3.7,
+        negative: 1.8,
+      },
+      vas: 74,
+    },
+  },
+  {
+    id: "2025-08-15",
+    year: 2025,
+    month: 8,
+    date: 15,
+    wakeUpTime: "08:30",
+    bedTime: "01:00",
+    achievements: ["social_isolation", "gaming", "online_shopping"],
+    weather: "rainy",
+    mood: {
+      panasSf: {
+        positive: 2.3,
+        negative: 3.2,
+      },
+      vas: 41,
+    },
+  },
+  {
+    id: "2025-08-14",
+    year: 2025,
+    month: 8,
+    date: 14,
+    wakeUpTime: "06:00",
+    bedTime: "22:30",
+    achievements: ["exercise", "meal_prep", "cleaning", "reading"],
+    weather: "sunny",
+    mood: {
+      panasSf: {
+        positive: 4.5,
+        negative: 0.8,
+      },
+      vas: 89,
+    },
+  },
+  {
+    id: "2025-08-13",
+    year: 2025,
+    month: 8,
+    date: 13,
+    wakeUpTime: "07:30",
+    bedTime: "23:45",
+    achievements: ["volunteer_work", "nature_walk", "journaling"],
+    weather: "cloudy",
+    mood: {
+      panasSf: {
+        positive: 4.3,
+        negative: 1.1,
+      },
+      vas: 86,
+    },
+  },
+  {
+    id: "2025-07-20",
+    year: 2025,
+    month: 7,
+    date: 20,
+    wakeUpTime: "09:15",
+    bedTime: "02:30",
+    achievements: ["procrastination", "youtube_binge", "junk_food"],
+    weather: "rainy",
+    mood: {
+      panasSf: {
+        positive: 1.8,
+        negative: 4.1,
+      },
+      vas: 28,
+    },
+  },
+  {
+    id: "2025-07-15",
+    year: 2025,
+    month: 7,
+    date: 15,
+    wakeUpTime: "05:45",
+    bedTime: "22:00",
+    achievements: ["early_morning_run", "productive_work", "quality_time_family"],
+    weather: "sunny",
+    mood: {
+      panasSf: {
+        positive: 4.7,
+        negative: 0.5,
+      },
+      vas: 94,
+    },
+  },
+  {
+    id: "2025-06-30",
+    year: 2025,
+    month: 6,
+    date: 30,
+    wakeUpTime: "07:15",
+    bedTime: "23:00",
+    achievements: ["skill_learning", "networking", "creative_project"],
+    weather: "cloudy",
+    mood: {
+      panasSf: {
+        positive: 3.9,
+        negative: 1.4,
+      },
+      vas: 79,
+    },
+  },
+  {
+    id: "2025-06-25",
+    year: 2025,
+    month: 6,
+    date: 25,
+    wakeUpTime: "08:00",
+    bedTime: "00:45",
+    achievements: ["side_hustle", "podcast_listening", "stretching"],
+    weather: "foggy",
+    mood: {
+      panasSf: {
+        positive: 3.5,
+        negative: 2.1,
+      },
+      vas: 67,
+    },
+  },
+  {
+    id: "2025-06-10",
+    year: 2025,
+    month: 6,
+    date: 10,
+    wakeUpTime: "10:30",
+    bedTime: "03:15",
+    achievements: ["argument_with_partner", "stress_eating", "phone_scrolling"],
+    weather: "stormy",
+    mood: {
+      panasSf: {
+        positive: 1.5,
+        negative: 4.3,
+      },
+      vas: 22,
+    },
+  },
+  {
+    id: "2025-05-28",
+    year: 2025,
+    month: 5,
+    date: 28,
+    wakeUpTime: "06:45",
+    bedTime: "22:45",
+    achievements: ["team_collaboration", "problem_solving", "gratitude_practice"],
+    weather: "sunny",
+    mood: {
+      panasSf: {
+        positive: 4.0,
+        negative: 1.2,
+      },
+      vas: 81,
+    },
+  },
+  {
+    id: "2025-05-15",
+    year: 2025,
+    month: 5,
+    date: 15,
+    wakeUpTime: "07:30",
+    bedTime: "24:00",
+    achievements: ["deep_work", "healthy_cooking", "call_old_friend"],
+    weather: "cloudy",
+    mood: {
+      panasSf: {
+        positive: 4.2,
+        negative: 0.9,
+      },
+      vas: 87,
+    },
+  },
+  {
     id: "2025-05-01",
     year: 2025,
     month: 5,
@@ -12,10 +216,10 @@ export const sampleEvents = [
     weather: "sunny",
     mood: {
       panasSf: {
-        positive: 3.8, // 1-5スケール（ポジティブ感情の平均）
-        negative: 1.2, // 1-5スケール（ネガティブ感情の平均）
+        positive: 3.8,
+        negative: 1.2,
       },
-      vas: 78, // 0-100スケール（Visual Analog Scale）
+      vas: 78,
     },
   },
   {
@@ -29,10 +233,44 @@ export const sampleEvents = [
     weather: "rainy",
     mood: {
       panasSf: {
-        positive: 3.8, // 1-5スケール（ポジティブ感情の平均）
-        negative: 1.2, // 1-5スケール（ネガティブ感情の平均）
+        positive: 3.8,
+        negative: 1.2,
       },
-      vas: 78, // 0-100スケール（Visual Analog Scale）
+      vas: 78,
+    },
+  },
+  {
+    id: "2025-04-18",
+    year: 2025,
+    month: 4,
+    date: 18,
+    wakeUpTime: "08:45",
+    bedTime: "01:30",
+    achievements: ["burnout_recovery", "self_care", "therapy_session"],
+    weather: "cloudy",
+    mood: {
+      panasSf: {
+        positive: 2.8,
+        negative: 2.7,
+      },
+      vas: 52,
+    },
+  },
+  {
+    id: "2025-04-05",
+    year: 2025,
+    month: 4,
+    date: 5,
+    wakeUpTime: "06:15",
+    bedTime: "22:15",
+    achievements: ["marathon_training", "meal_planning", "digital_detox"],
+    weather: "sunny",
+    mood: {
+      panasSf: {
+        positive: 4.4,
+        negative: 0.7,
+      },
+      vas: 91,
     },
   },
   {
@@ -87,6 +325,40 @@ export const sampleEvents = [
     },
   },
   {
+    id: "2025-03-10",
+    year: 2025,
+    month: 3,
+    date: 10,
+    wakeUpTime: "09:00",
+    bedTime: "02:00",
+    achievements: ["creative_writing", "art_project", "inspiration_seeking"],
+    weather: "foggy",
+    mood: {
+      panasSf: {
+        positive: 3.6,
+        negative: 1.9,
+      },
+      vas: 71,
+    },
+  },
+  {
+    id: "2025-02-28",
+    year: 2025,
+    month: 2,
+    date: 28,
+    wakeUpTime: "07:00",
+    bedTime: "23:15",
+    achievements: ["financial_planning", "home_organization", "skill_practice"],
+    weather: "cloudy",
+    mood: {
+      panasSf: {
+        positive: 3.4,
+        negative: 1.6,
+      },
+      vas: 69,
+    },
+  },
+  {
     id: "2025-02-23",
     year: 2025,
     month: 2,
@@ -103,4 +375,118 @@ export const sampleEvents = [
       vas: 58,
     },
   },
+  {
+    id: "2025-02-14",
+    year: 2025,
+    month: 2,
+    date: 14,
+    wakeUpTime: "08:30",
+    bedTime: "00:30",
+    achievements: ["romantic_date", "gift_giving", "quality_time"],
+    weather: "snowy",
+    mood: {
+      panasSf: {
+        positive: 4.6,
+        negative: 0.6,
+      },
+      vas: 93,
+    },
+  },
+  {
+    id: "2025-02-01",
+    year: 2025,
+    month: 2,
+    date: 1,
+    wakeUpTime: "09:45",
+    bedTime: "02:45",
+    achievements: ["deadline_stress", "all_nighter", "coffee_overdose"],
+    weather: "snowy",
+    mood: {
+      panasSf: {
+        positive: 1.9,
+        negative: 4.0,
+      },
+      vas: 31,
+    },
+  },
+  {
+    id: "2025-01-20",
+    year: 2025,
+    month: 1,
+    date: 20,
+    wakeUpTime: "06:00",
+    bedTime: "22:30",
+    achievements: ["goal_setting", "habit_tracking", "mindfulness"],
+    weather: "sunny",
+    mood: {
+      panasSf: {
+        positive: 4.1,
+        negative: 1.0,
+      },
+      vas: 84,
+    },
+  },
+  {
+    id: "2025-01-01",
+    year: 2025,
+    month: 1,
+    date: 1,
+    wakeUpTime: "11:00",
+    bedTime: "01:00",
+    achievements: ["new_year_celebration", "reflection", "resolution_making"],
+    weather: "snowy",
+    mood: {
+      panasSf: {
+        positive: 4.3,
+        negative: 1.5,
+      },
+      vas: 80,
+    },
+  },
 ] as const satisfies CalenderEvent[];
+
+// 追加のachievementカテゴリーの例
+export const achievementCategories = {
+  // ポジティブなアクティビティ
+  positive: [
+    "exercise",
+    "study",
+    "reading",
+    "meditation",
+    "cooking",
+    "skill_learning",
+    "creative_project",
+    "volunteer_work",
+    "quality_time_family",
+    "gratitude_practice",
+    "deep_work",
+    "marathon_training",
+    "digital_detox",
+    "mindfulness",
+    "goal_setting",
+    "habit_tracking",
+  ],
+  // 社交的なアクティビティ
+  social: ["talk_with_friends", "networking", "team_collaboration", "call_old_friend", "romantic_date", "quality_time", "new_year_celebration"],
+  // ネガティブ・問題のあるアクティビティ
+  negative: [
+    "youtube_binge",
+    "fight",
+    "social_isolation",
+    "procrastination",
+    "gaming",
+    "online_shopping",
+    "junk_food",
+    "argument_with_partner",
+    "stress_eating",
+    "phone_scrolling",
+    "burnout_recovery",
+    "deadline_stress",
+    "all_nighter",
+    "coffee_overdose",
+  ],
+  // セルフケア・回復
+  selfCare: ["self_care", "therapy_session", "stretching", "nature_walk", "journaling", "meal_prep", "cleaning", "home_organization", "financial_planning"],
+  // 創造性・趣味
+  creative: ["practice_instrument", "creative_writing", "art_project", "inspiration_seeking", "movie_night", "podcast_listening"],
+} as const;

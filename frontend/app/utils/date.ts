@@ -25,3 +25,11 @@ export const convertTimeToMs = (time: string): number => {
   const [hours, minutes] = time.split(":").map(Number);
   return (hours * 60 + minutes) * 60 * 1000; // ミリ秒に変換
 };
+
+// ミリ秒を<時間:分>形式の文字列に変換
+export const convertMsToTime = (ms: number): string => {
+  const totalMinutes = Math.floor(ms / (60 * 1000));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+};

@@ -14,7 +14,7 @@
       "version": "latest"
     }
   },
-  "initializeCommand": "just clean",
+  // "initializeCommand": "just clean",
   "customizations": {
     "vscode": {
       "extensions": [
