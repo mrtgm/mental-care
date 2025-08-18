@@ -36,7 +36,9 @@ export const convertTimeToMs = (time: string): number => {
 
 // ミリ秒を<時間:分>形式の文字列に変換
 export const convertMsToTime = (ms: number): string => {
-  const totalMinutes = Math.floor(ms / (60 * 1000));
+  const DAY = 24 * 60 * 60 * 1000;
+  const normedMs = ms > DAY ? ms % DAY : ms; // 1日を超える場合はその日の時間に変換
+  const totalMinutes = Math.floor(normedMs / (60 * 1000));
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;

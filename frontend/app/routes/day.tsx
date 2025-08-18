@@ -14,7 +14,7 @@ export default function Day() {
     <>
       <CalenderFooter />
 
-      <div className=" p-6 border border-slate-10 bg-[#08101b]  mt-8">
+      <div className=" p-6 border border-[#3f485a] bg-[#08101b]  mt-8">
         <div className="text-white">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-2xl font-bold">{dayId}</h2>

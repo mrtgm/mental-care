@@ -1,4 +1,3 @@
-import type { SetURLSearchParams } from "react-router";
 import { BEDTIME_COLOR, MOOD_COLOR, type TargetType, WAKEUP_COLOR } from "../domain";
 
 export const GraphFooter = ({ handleGraphTypeChange }: { handleGraphTypeChange: (type: TargetType) => void }) => {

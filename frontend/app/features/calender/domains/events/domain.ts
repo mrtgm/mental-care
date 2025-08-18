@@ -225,7 +225,7 @@ export const getCalendarDateStyles = (
   return {
     className: `${baseClass} hover:bg-gray-200 hover:border-gray-300 bg-gray-900`,
     style: {
-      border: "1px dashed #3f485a",
+      border: "1px solid #3f485a",
       backgroundColor: "transparent",
     },
   };
