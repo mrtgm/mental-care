@@ -26,15 +26,12 @@ on:
         required: true
       VPS_PORT:
         required: true
-      VAULT_PASSWORD:
-        required: true
       SLACK_WEBHOOK_URL:
         required: true
       TS_OAUTH_CLIENT_ID:
         required: true
       TS_OAUTH_SECRET:
         required: true
-
 
 env:
   REGISTRY: ghcr.io
@@ -46,7 +43,7 @@ jobs:
     outputs:
       frontend-changed: ${{ steps.changes.outputs.frontend }}
       backend-changed: ${{ steps.changes.outputs.backend }}
-      ansible-changed: ${{ steps.changes.outputs.ansible }}
+      vps-changed: ${{ steps.changes.outputs.vps }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v2
@@ -58,8 +55,10 @@ jobs:
               - 'frontend/**'
             backend:
               - 'backend/**'
-            ansible:
-              - 'ansible/**'
+            vps:
+              - 'compose.yml'
+              - '.env'
+              - 'db/init.sql'
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -162,7 +161,7 @@ jobs:
     needs: [detect-changes, build-frontend, build-backend]
     if: |
       always() && (
-        needs.detect-changes.outputs.ansible-changed == 'true' ||
+        needs.detect-changes.outputs.vps-changed == 'true' ||
         (
           !(needs.build-frontend.result == 'skipped' && needs.build-backend.result == 'skipped') &&
           needs.build-frontend.result != 'failure' &&
@@ -178,7 +177,7 @@ jobs:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
-          use-cache: 'true'
+          use-cache: "true"
 
       - name: Setup unified SSH configuration
         run: |
@@ -186,18 +185,12 @@ jobs:
           echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
-      - name: Apply Ansible Playbook
-        if: needs.detect-changes.outputs.ansible-changed == 'true'
-        uses: dawidd6/action-ansible-playbook@v2
-        with:
-          playbook: ansible/playbooks/deploy-stack.yml
-          key: ${{ secrets.VPS_SSH_KEY }}
-          vault_password: ${{ secrets.VAULT_PASSWORD }}
-          inventory: |
-            [vps]
-            ${{ secrets.VPS_HOST }} ansible_user=${{ secrets.VPS_USER }} ansible_port=${{ secrets.VPS_PORT }} ansible_become=true
-          options: |
-            --extra-vars "@ansible/inventory/group_vars/vps.yml"
+      - name: rsync .env & compose.yml & db/init.sql to VPS
+        if: needs.detect-changes.outputs.vps-changed == 'true'
+        run: |
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }}" .env ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/apps/mental/
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }}" compose.yml ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/apps/mental/
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }}" db/init.sql ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/apps/mental/
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1
@@ -207,7 +200,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            cd /opt/mental/compose
+            cd /opt/apps/mental
             docker compose pull ${{ inputs.compose_services }}
             docker compose up -d --wait --no-deps ${{ inputs.compose_services }}
             docker image prune -af --filter "until=240h"
