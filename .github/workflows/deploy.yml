@@ -185,12 +185,17 @@ jobs:
           echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
-      - name: rsync .env & compose.yml & db/init.sql to VPS
+      - name: rsync to VPS
         if: needs.detect-changes.outputs.vps-changed == 'true'
         run: |
-          rsync -avz -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }}" .env ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/apps/mental/
-          rsync -avz -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }}" compose.yml ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/apps/mental/
-          rsync -avz -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }}" db/init.sql ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/apps/mental/
+          SSH_OPTIONS="-o StrictHostKeyChecking=no -p ${{ secrets.VPS_PORT }}"
+          REMOTE="${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
+          REMOTE_PATH="/opt/apps/mental"
+
+          ssh $SSH_OPTIONS $REMOTE "mkdir -p $REMOTE_PATH/db"
+          rsync -avz -e "ssh $SSH_OPTIONS" \
+            .env compose.yml db/init.sql \
+            $REMOTE:$REMOTE_PATH/
 
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1
