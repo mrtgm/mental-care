@@ -192,7 +192,7 @@ jobs:
           REMOTE="${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}"
           REMOTE_PATH="/opt/apps/mental"
 
-          rsync -avz -e "ssh $SSH_OPTIONS" \
+          sudo rsync -avz -e "ssh $SSH_OPTIONS" \
             .env compose.yml db/init.sql \
             $REMOTE:$REMOTE_PATH/
 
