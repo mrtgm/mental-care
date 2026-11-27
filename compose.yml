@@ -3,6 +3,8 @@ services:
   frontend:
     image: ghcr.io/mrtgm/mental-frontend:prod
     container_name: frontend-prod
+    mem_limit: 512m
+    memswap_limit: 512m
     init: true
     restart: always
     profiles: ["prod"]
@@ -33,6 +35,8 @@ services:
   frontend-staging:
     image: ghcr.io/mrtgm/mental-frontend:staging
     container_name: frontend-staging
+    mem_limit: 512m
+    memswap_limit: 512m
     init: true
     restart: always
     profiles: ["staging"]
