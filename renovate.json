@@ -1,0 +1,33 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    "docker:pinDigests",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "baseBranches": ["devel"],
+  "timezone": "Asia/Tokyo",
+  "minimumReleaseAge": "3 days",
+  "automergeType": "branch",
+  "postUpdateOptions": ["gomodTidy"],
+  "vulnerabilityAlerts": {
+    "minimumReleaseAge": null,
+    "automerge": true
+  },
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch", "digest", "pin", "pinDigest"],
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    },
+    {
+      "matchManagers": ["bun"],
+      "groupName": "frontend dependencies",
+      "matchUpdateTypes": ["minor", "patch"]
+    }
+  ]
+}
